@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class ARENABATTLE_API AABGameModeBase : public AGameModeBase
+class UNREALARENABATTLE_API AABGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	

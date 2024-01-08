@@ -3,13 +3,13 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class ArenaBattleEditorTarget : TargetRules
+public class UnrealArenaBattleTarget : TargetRules
 {
-	public ArenaBattleEditorTarget( TargetInfo Target) : base(Target)
+	public UnrealArenaBattleTarget( TargetInfo Target) : base(Target)
 	{
-		Type = TargetType.Editor;
+		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
-		ExtraModuleNames.Add("ArenaBattle");
+		ExtraModuleNames.Add("UnrealArenaBattle");
 	}
 }

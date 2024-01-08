@@ -2,11 +2,13 @@
 
 using UnrealBuildTool;
 
-public class ArenaBattle : ModuleRules
+public class UnrealArenaBattle : ModuleRules
 {
-	public ArenaBattle(ReadOnlyTargetRules Target) : base(Target)
+	public UnrealArenaBattle(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+
+		PublicIncludePaths.AddRange(new string[] { "UnrealArenaBattle" });
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
 
