@@ -45,16 +45,19 @@ protected:
 protected:
 	// Input Section
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-		TObjectPtr<class UInputMappingContext> DefaultMappingContext;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 		TObjectPtr<class UInputAction> JumpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-		TObjectPtr<class UInputAction> MoveAction;
+		TObjectPtr<class UInputAction> ChangeControlAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-		TObjectPtr<class UInputAction> LookAction;
+		TObjectPtr<class UInputAction> ShoulderMoveAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+		TObjectPtr<class UInputAction> ShoulderLookAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+		TObjectPtr<class UInputAction> QuaterMoveAction;
 
 	// 다른 에셋으로 변경할 수 있도록 설계하기 위해서
 	// 지정자를 EditAnywhere 로 지정
@@ -62,6 +65,18 @@ protected:
 	// FInputActionValue 를 사용하려면
 	// InputActionValue.h include 하고
 	// Build.cs에서 "EnhancedInput" 라는 모듈을 추가해줘야 함
-	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
+	void ShoulderMove(const FInputActionValue& Value);
+	void ShoulderLook(const FInputActionValue& Value);
+
+	void QuaterMove(const FInputActionValue& Value);
+
+	ECharacterControlType CurrentCharacterControlType;
+
+protected:
+	// Character Control Section
+	virtual void SetCharacterControlData(const class UABCharacterControlData* CharacterControlData) override;
+
+	// v키를 눌렀을 때 컨트롤타입 변경하기 위한 함수
+	void ChangeCharacterControl();
+	void SetCharacterControl(ECharacterControlType NewCharacterControlType);
 };
