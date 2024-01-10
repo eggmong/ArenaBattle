@@ -5,6 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Character/ABCharacterControlData.h"
 
 // Sets default values
 AABCharacterBase::AABCharacterBase()
@@ -43,4 +44,29 @@ AABCharacterBase::AABCharacterBase()
     {
         GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
     }
+
+    // 생성자에서 캐릭터컨트롤 데이터 추가해줬음 (숄더뷰, 쿼터뷰 데이터 추가)
+    static ConstructorHelpers::FObjectFinder<UABCharacterControlData> ShoulderDataRef(TEXT("/Script/UnrealArenaBattle.ABCharacterControlData'/Game/ArenaBattle/CharacterControl/ABC_Shoulder.ABC_Shoulder'"));
+    if (ShoulderDataRef.Object)
+    {
+        CharacterControlManager.Add(ECharacterControlType::Shoulder, ShoulderDataRef.Object);
+    }
+
+    static ConstructorHelpers::FObjectFinder<UABCharacterControlData> QuaterDataRef(TEXT("/Script/UnrealArenaBattle.ABCharacterControlData'/Game/ArenaBattle/CharacterControl/ABC_Quater.ABC_Quater'"));
+    if (QuaterDataRef.Object)
+    {
+        CharacterControlManager.Add(ECharacterControlType::Quater, QuaterDataRef.Object);
+    }
+}
+
+void AABCharacterBase::SetCharacterControlData(const UABCharacterControlData* CharacterControlData)
+{
+    // Pawn
+    bUseControllerRotationYaw = CharacterControlData->bUseControllerRotationYaw;
+    // 보통 캐릭터컨트롤에서 로테이션은 Yaw만 체크한다고 한다
+
+    // CharacterMovement
+    GetCharacterMovement()->bOrientRotationToMovement = CharacterControlData->bOrientRotationToMovement;
+    GetCharacterMovement()->bUseControllerDesiredRotation = CharacterControlData->bUseControllerDesiredRotation;
+    GetCharacterMovement()->RotationRate = CharacterControlData->RotationRate;
 }
