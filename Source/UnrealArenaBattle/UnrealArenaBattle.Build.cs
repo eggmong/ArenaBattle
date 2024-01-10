@@ -10,7 +10,7 @@ public class UnrealArenaBattle : ModuleRules
 
 		PublicIncludePaths.AddRange(new string[] { "UnrealArenaBattle" });
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
