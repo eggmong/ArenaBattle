@@ -6,6 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Character/ABCharacterControlData.h"
+#include "Animation/AnimMontage.h"
 
 // Sets default values
 AABCharacterBase::AABCharacterBase()
@@ -69,4 +70,10 @@ void AABCharacterBase::SetCharacterControlData(const UABCharacterControlData* Ch
     GetCharacterMovement()->bOrientRotationToMovement = CharacterControlData->bOrientRotationToMovement;
     GetCharacterMovement()->bUseControllerDesiredRotation = CharacterControlData->bUseControllerDesiredRotation;
     GetCharacterMovement()->RotationRate = CharacterControlData->RotationRate;
+}
+
+void AABCharacterBase::ProcessComboCommand()
+{
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    AnimInstance->Montage_Play(ComboActionMontage);
 }
