@@ -8,6 +8,8 @@
 #include "Character/ABCharacterControlData.h"
 #include "Animation/AnimMontage.h"
 #include "ABComboActionData.h"
+#include "Physics/ABCollision.h"
+#include "Engine/DamageEvents.h"
 
 // Sets default values
 AABCharacterBase::AABCharacterBase()
@@ -19,7 +21,7 @@ AABCharacterBase::AABCharacterBase()
 
     // Capsule
     GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
-    GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+    GetCapsuleComponent()->SetCollisionProfileName(CPROFILE_ABCAPSULE);
 
     // Movement
     GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -33,7 +35,7 @@ AABCharacterBase::AABCharacterBase()
     // Mesh
     GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -100.f), FRotator(0.f, -90.f, 0.f));
     GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-    GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
+    GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
     static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard.SK_CharM_Cardboard'"));
     if (CharacterMeshRef.Object)
@@ -58,6 +60,25 @@ AABCharacterBase::AABCharacterBase()
     if (QuaterDataRef.Object)
     {
         CharacterControlManager.Add(ECharacterControlType::Quater, QuaterDataRef.Object);
+    }
+
+    // 새로 생성한 NonPlayer를 위해 기본 액션을 세팅해줬음
+    static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/ArenaBattle/Animation/AM_ComboAttack.AM_ComboAttack'"));
+    if (ComboActionMontageRef.Object)
+    {
+        ComboActionMontage = ComboActionMontageRef.Object;
+    }
+
+    static ConstructorHelpers::FObjectFinder<UABComboActionData> ComboActionDataRef(TEXT("/Script/ArenaBattle.ABComboActionData'/Game/ArenaBattle/CharacterAction/ABA_ComboAttack.ABA_ComboAttack'"));
+    if (ComboActionDataRef.Object)
+    {
+        ComboActionData = ComboActionDataRef.Object;
+    }
+
+    static ConstructorHelpers::FObjectFinder<UAnimMontage> DeadActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/ArenaBattle/Animation/AM_Dead.AM_Dead'"));
+    if (DeadActionMontageRef.Object)
+    {
+        DeadMontage = DeadActionMontageRef.Object;
     }
 }
 
@@ -175,4 +196,93 @@ void AABCharacterBase::ComboCheck()
 
         HasNextComboCommand = false;
     }
+}
+
+void AABCharacterBase::AttackHitCheck()
+{
+    // 트레이스를 활용하여 물체가 서로 충돌되는지 체크하는 함수
+    // 투사해서 감지할거라 LineTrace/Sweep 중 하나인데, 구체를 이용해서 할 거라 Sweep
+    // 하나만 감지할거고, Trace 채널을 사용할거다
+
+    // 트레이스 채널을 사용할거면 헤더 파일을 만들어 간단한 매크로를 작성해두면 편함.
+    // ABCollision.h (텍스트파일로 만든거고, 만든 후 uproject에 generate 하면 됨)
+
+    FHitResult OutHitResult;    // 체크 결과값
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
+    // FCollisionQueryParams 들어가서 생성자 보면,
+    // InTraceTag : 태그 정보로 분석할 때 식별자 정보가 되는 인자
+    // bInTraceComplex : 복잡한 형태의 충돌체도 감지할지 말지
+    // InIgnoreActor : 무시할 Actor들, 이번 프로젝트에선 자기 자신만 무시하면 되기 때문에 this를 넣었음
+
+
+
+    const float AttackRange = 40.0f;
+    const float AttackRadius = 50.0f;
+    const float AttackDamage = 30.0f;
+    const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+    // GetActorLocation() : 현재 액터 위치
+    // 더하기
+    // GetActorForwardVector (액터의 시선 방향) * GetCapsuleComponent()->GetScaledCapsuleRadius (캡슐의 반지름 값)
+    // = 액터의 위치에서 시작되는 게 아니라 정면에 있는 캡슐의 위치에서부터 시작하도록 함
+
+    const FVector End = Start + GetActorForwardVector() * AttackRange;
+
+    bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, CCHANNEL_ABACTION, FCollisionShape::MakeSphere(AttackRadius), Params);
+    // 월드가 제공하는 서비스라 월드 포인터를 가져와야 함 (GetWorld)
+    // Start : 충돌에 사용할 구체 투사 시작 지점, End : 끝 지점
+    // FCollisionShape::MakeSphere(AttackRadius) 로 구체의 영역 지정 (반지름 50f)
+    // 사용할 트레이스 채널은 Project Setting -> Collision 에서 만들었던 ABAction (CCHANNEL_ABACTION)
+    
+    if (HitDetected)
+    {
+        FDamageEvent DamageEvent;
+        OutHitResult.GetActor()->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
+    }
+
+#if ENABLE_DRAW_DEBUG
+
+    FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+    // 캡슐의 원점
+
+    float CapsuleHalfHeight = AttackRange * 0.5f;
+    FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
+
+    DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+    // World 에서 제공
+    // 캡슐을 시선 방향으로 눕혀지도록 회전시킴 (FRotationMatrix::MakeFromZ)
+
+#endif
+}
+
+float AABCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+    // return 값은 Actor가 받은 데미지 양
+
+    Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+    // EventInstigator : 가해자
+    // DamageCauser : 가해자가 사용한 무기 또는 빙의한 pawn
+
+    // 죽음 구현
+    SetDead();
+
+    return DamageAmount;
+}
+
+void AABCharacterBase::SetDead()
+{
+    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+    // 움직임 멈추기
+
+    PlayDeadAnimation();
+    // 죽은 몽타주 재생
+
+    SetActorEnableCollision(false);
+}
+
+void AABCharacterBase::PlayDeadAnimation()
+{
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+    AnimInstance->StopAllMontages(0.f);
+    AnimInstance->Montage_Play(DeadMontage, 1.f);
 }
