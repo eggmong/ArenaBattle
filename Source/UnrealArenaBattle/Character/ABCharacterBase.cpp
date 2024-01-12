@@ -9,6 +9,7 @@
 #include "Animation/AnimMontage.h"
 #include "ABComboActionData.h"
 #include "Physics/ABCollision.h"
+#include "Engine/DamageEvents.h"
 
 // Sets default values
 AABCharacterBase::AABCharacterBase()
@@ -72,6 +73,12 @@ AABCharacterBase::AABCharacterBase()
     if (ComboActionDataRef.Object)
     {
         ComboActionData = ComboActionDataRef.Object;
+    }
+
+    static ConstructorHelpers::FObjectFinder<UAnimMontage> DeadActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/ArenaBattle/Animation/AM_Dead.AM_Dead'"));
+    if (DeadActionMontageRef.Object)
+    {
+        DeadMontage = DeadActionMontageRef.Object;
     }
 }
 
@@ -228,7 +235,8 @@ void AABCharacterBase::AttackHitCheck()
     
     if (HitDetected)
     {
-
+        FDamageEvent DamageEvent;
+        OutHitResult.GetActor()->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
     }
 
 #if ENABLE_DRAW_DEBUG
@@ -244,4 +252,37 @@ void AABCharacterBase::AttackHitCheck()
     // 캡슐을 시선 방향으로 눕혀지도록 회전시킴 (FRotationMatrix::MakeFromZ)
 
 #endif
+}
+
+float AABCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+    // return 값은 Actor가 받은 데미지 양
+
+    Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+    // EventInstigator : 가해자
+    // DamageCauser : 가해자가 사용한 무기 또는 빙의한 pawn
+
+    // 죽음 구현
+    SetDead();
+
+    return DamageAmount;
+}
+
+void AABCharacterBase::SetDead()
+{
+    GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+    // 움직임 멈추기
+
+    PlayDeadAnimation();
+    // 죽은 몽타주 재생
+
+    SetActorEnableCollision(false);
+}
+
+void AABCharacterBase::PlayDeadAnimation()
+{
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+    AnimInstance->StopAllMontages(0.f);
+    AnimInstance->Montage_Play(DeadMontage, 1.f);
 }

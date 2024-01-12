@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,7 +7,7 @@
 #include "AnimNotify_AttackHitCheck.generated.h"
 
 /**
- UAnimNotify Å¬·¡½ºÀÇ ÇÔ¼öµéÀ» override ÇØ¼­ ±¸ÇöÇØÁà¾ß ÇÔ.
+ UAnimNotify í´ë˜ìŠ¤ì˜ í•¨ìˆ˜ë“¤ì„ override í•´ì„œ êµ¬í˜„í•´ì¤˜ì•¼ í•¨.
  */
 UCLASS()
 class UNREALARENABATTLE_API UAnimNotify_AttackHitCheck : public UAnimNotify

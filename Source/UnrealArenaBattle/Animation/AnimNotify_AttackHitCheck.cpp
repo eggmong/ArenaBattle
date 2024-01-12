@@ -1,13 +1,13 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Animation/AnimNotify_AttackHitCheck.h"
 #include "Interface/ABAnimationAttackInterface.h"
 
 
-// USkeletalMeshComponent : ¾Ö´Ï¸ÞÀÌ¼ÇÀ» °ü¸®
-// UAnimSequenceBase : ¾Ö´Ï¸ÞÀÌ¼Ç Á¤º¸
-// FAnimNotifyEventReference : Ãß°¡ÀûÀÎ Á¤º¸
+// USkeletalMeshComponent : ì• ë‹ˆë©”ì´ì…˜ì„ ê´€ë¦¬
+// UAnimSequenceBase : ì• ë‹ˆë©”ì´ì…˜ ì •ë³´
+// FAnimNotifyEventReference : ì¶”ê°€ì ì¸ ì •ë³´
 void UAnimNotify_AttackHitCheck::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
@@ -15,12 +15,12 @@ void UAnimNotify_AttackHitCheck::Notify(USkeletalMeshComponent* MeshComp, UAnimS
 	if (MeshComp)
 	{
 		//MeshComp->GetOwner();
-		// ¸Þ½¬ÀÇ ¿À³Ê°¡ ÇÃ·¹ÀÌ¾î Ä³¸¯ÅÍ¶ó¸é, °ø°ÝÀ» ÆÇÁ¤ÇÏ¶ó°í ¸í·É ³»¸®±â
-		// ÀÌ·¸°Ô Ä³¸¯ÅÍ¸¦ ¹Ù·Î »ç¿ëÇÏ·Á¸é #include "Character/ABCharacterBase.h" ¸¦ ÇØÁà¾ß ÇÏ´Âµ¥,
-		// Çì´õ¸¦ include ÇÑ´Ù´Â °Ç ÀÇÁ¸¼ºÀÌ »ý±ä´Ù´Â °Í
-		// => ÀÎÅÍÆäÀÌ½º¸¦ ¸¸µé¾î¼­ »ç¿ëÇØ¶ó
+		// ë©”ì‰¬ì˜ ì˜¤ë„ˆê°€ í”Œë ˆì´ì–´ ìºë¦­í„°ë¼ë©´, ê³µê²©ì„ íŒì •í•˜ë¼ê³  ëª…ë ¹ ë‚´ë¦¬ê¸°
+		// ì´ë ‡ê²Œ ìºë¦­í„°ë¥¼ ë°”ë¡œ ì‚¬ìš©í•˜ë ¤ë©´ #include "Character/ABCharacterBase.h" ë¥¼ í•´ì¤˜ì•¼ í•˜ëŠ”ë°,
+		// í—¤ë”ë¥¼ include í•œë‹¤ëŠ” ê±´ ì˜ì¡´ì„±ì´ ìƒê¸´ë‹¤ëŠ” ê²ƒ
+		// => ì¸í„°íŽ˜ì´ìŠ¤ë¥¼ ë§Œë“¤ì–´ì„œ ì‚¬ìš©í•´ë¼
 		// ABAnimationAttackInterface
-		// ±×·¡¼­ À§ ÄÚµå Áö¿ì°í, ¾Æ·¡¿¡¼­ ´Ù½Ã ±¸Çö
+		// ê·¸ëž˜ì„œ ìœ„ ì½”ë“œ ì§€ìš°ê³ , ì•„ëž˜ì—ì„œ ë‹¤ì‹œ êµ¬í˜„
 		
 		IABAnimationAttackInterface* AttackPawn = Cast<IABAnimationAttackInterface>(MeshComp->GetOwner());
 		if (AttackPawn)

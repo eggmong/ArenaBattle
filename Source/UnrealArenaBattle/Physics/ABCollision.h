@@ -1,17 +1,17 @@
-
+ï»¿
 #pragma once
 
 #include "CoreMinimal.h"
 
 #define CPROFILE_ABCAPSULE TEXT("ABCapsule")
-// Project Setting -> Collision ¿¡¼­ »ı¼ºÇß´ø ÇÁ·ÎÇÊ
+// Project Setting -> Collision ì—ì„œ ìƒì„±í–ˆë˜ í”„ë¡œí•„
 
 
 #define CPROFILE_ABTRIGGER TEXT("ABTrigger")
-// Project Setting -> Collision ¿¡¼­ »ı¼ºÇß´ø ÇÁ·ÎÇÊ
+// Project Setting -> Collision ì—ì„œ ìƒì„±í–ˆë˜ í”„ë¡œí•„
 
 
 #define CCHANNEL_ABACTION ECC_GameTraceChannel1
-// Project Setting -> Collision ¿¡¼­ Ãß°¡Çß´ø Trace ChannelÀÎ ABAction ÀÇ ÀüÃ³¸®±â (ÀÚµ¿ »ı¼ºµÊ)
-// DefaultEngine.ini ¿¡¼­ È®ÀÎ °¡´É
+// Project Setting -> Collision ì—ì„œ ì¶”ê°€í–ˆë˜ Trace Channelì¸ ABAction ì˜ ì „ì²˜ë¦¬ê¸° (ìë™ ìƒì„±ë¨)
+// DefaultEngine.ini ì—ì„œ í™•ì¸ ê°€ëŠ¥
 

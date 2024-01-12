@@ -70,7 +70,20 @@ protected:
 	bool HasNextComboCommand = false;
 
 
-	//Attack Hit Section
+	
 protected:
+	// Attack Hit Section
 	virtual void AttackHitCheck() override;
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	// AActor에 있음
+
+protected:
+	// Dead Section
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UAnimMontage> DeadMontage;
+
+	virtual void SetDead();
+	void PlayDeadAnimation();
 };
