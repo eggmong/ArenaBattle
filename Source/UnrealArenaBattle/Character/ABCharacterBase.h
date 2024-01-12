@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Interface/ABAnimationAttackInterface.h"
 #include "ABCharacterBase.generated.h"
 
 UENUM()
@@ -15,7 +16,7 @@ enum class ECharacterControlType : uint8
 
 
 UCLASS()
-class UNREALARENABATTLE_API AABCharacterBase : public ACharacter
+class UNREALARENABATTLE_API AABCharacterBase : public ACharacter, public IABAnimationAttackInterface
 {
 	GENERATED_BODY()
 
@@ -67,4 +68,9 @@ protected:
 
 	// 타이머 이전에 입력 커맨드가 들어왔는지 체크
 	bool HasNextComboCommand = false;
+
+
+	//Attack Hit Section
+protected:
+	virtual void AttackHitCheck() override;
 };
