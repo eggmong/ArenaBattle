@@ -14,4 +14,11 @@ class UNREALARENABATTLE_API AABCharacterNonPlayer : public AABCharacterBase
 {
 	GENERATED_BODY()
 	
+
+public:
+	AABCharacterNonPlayer();
+
+protected:
+	// 상속받은 SetDead 함수 재구현
+	void SetDead() override;
 };
