@@ -23,7 +23,8 @@ AABGameMode::AABGameMode()
 
 	// + 위 코드 주석처리 해버리고,
 	// 내가 만든 캐릭터 클래스를 DefaultPawnClass 로 지정
-	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Script/UnrealArenaBattle.ABCharacterPlayer"));
+	// ++ 캐릭터 클래스를 기반으로 BP 만들었으므로 BP_ABCharacterPlayer로 바꿨음, 클래스 참조니까 _C
+	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Script/Engine.Blueprint'/Game/ArenaBattle/Blueprint/BP_ABCharacterPlayer.BP_ABCharacterPlayer_C'"));
 	if (DefaultPawnClassRef.Class)
 	{
 		DefaultPawnClass = DefaultPawnClassRef.Class;
