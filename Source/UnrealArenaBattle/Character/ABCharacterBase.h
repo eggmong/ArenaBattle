@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interface/ABAnimationAttackInterface.h"
+#include "Interface/ABCharacterWidgetInterface.h"
 #include "ABCharacterBase.generated.h"
 
 UENUM()
@@ -16,13 +17,19 @@ enum class ECharacterControlType : uint8
 
 
 UCLASS()
-class UNREALARENABATTLE_API AABCharacterBase : public ACharacter, public IABAnimationAttackInterface
+class UNREALARENABATTLE_API AABCharacterBase : public ACharacter, public IABAnimationAttackInterface, public IABCharacterWidgetInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	AABCharacterBase();
+
+	virtual void PostInitializeComponents() override;		// 인스턴스 Setup을 종료하는 시점에서 BeginPlay가 실행되기 전인 PostInitializeComponents 에서
+															// Stat의 델리게이트에, 죽었을 때 죽는 모션을 수행하도록 처리하는 함수 등록
+															// (액터의 생명주기 문서 참고)
+															// BeginPlay에서 구현할 수도 있고 생성자에서 바인딩 할 수도 있지만
+															// 이런 함수가 있다는 거 알려고 여기서 구현
 
 
 protected:
@@ -73,10 +80,11 @@ protected:
 	
 protected:
 	// Attack Hit Section
-	virtual void AttackHitCheck() override;
+	virtual void AttackHitCheck() override;					// IABAnimationAttackInterface 에서 상속받은 순수가상함수
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-	// AActor에 있음
+	// AActor에 있음 (ACharacter 의 부모, 부모, 부모)
+
 
 protected:
 	// Dead Section
@@ -88,4 +96,18 @@ protected:
 	void PlayDeadAnimation();
 
 	float DeadEventDelayTime = 5.0f;
+
+
+protected:
+	// Stat Section
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stat", Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UABCharacterStatComponent> Stat;
+
+
+protected:
+	// UI Widget Section
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Widget", Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UABWidgetComponent> HpBar;
+
+	virtual void SetupCharacterWidget(class UABUserWidget* InUserWidget) override;			// IABCharacterWidgetInterface 에서 상속받은 순수가상함수
 };

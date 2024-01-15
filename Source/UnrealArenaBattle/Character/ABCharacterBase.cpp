@@ -10,6 +10,9 @@
 #include "ABComboActionData.h"
 #include "Physics/ABCollision.h"
 #include "Engine/DamageEvents.h"
+#include "CharacterStat/ABCharacterStatComponent.h"
+#include "UI/ABWidgetComponent.h"
+#include "UI/ABHpBarWidget.h"
 
 // Sets default values
 AABCharacterBase::AABCharacterBase()
@@ -80,6 +83,36 @@ AABCharacterBase::AABCharacterBase()
     {
         DeadMontage = DeadActionMontageRef.Object;
     }
+
+
+    // Stat Component
+    Stat = CreateDefaultSubobject<UABCharacterStatComponent>(TEXT("Stat"));
+
+
+    // Widget Component
+    // 위젯의 경우 애니메이션 블루프린트와 유사하게, 클래스 정보를 등록해서
+    // BeginPlay가 시작 되면 그 때 클래스 정보로부터 인스턴스가 생성되는 형태
+    // 그래서 위젯 블루프린트의 레퍼런스를 가져와, ConstructorHelper 로 클래스 정보를 가져와야 함
+    HpBar = CreateDefaultSubobject<UABWidgetComponent>(TEXT("Widget"));
+    HpBar->SetupAttachment(GetMesh());
+    HpBar->SetRelativeLocation(FVector(0.f, 0.f, 180.f));
+    static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/ArenaBattle/UI/WBP_HpBar.WBP_HpBar_C")); // 클래스 정보니까 _C 붙임
+
+    if (HpBarWidgetRef.Class)
+    {
+        HpBar->SetWidgetClass(HpBarWidgetRef.Class);
+        HpBar->SetWidgetSpace(EWidgetSpace::Screen);        // 위젯 위치를 2D 공간으로 지정. 캔버스.
+        HpBar->SetDrawSize(FVector2D(150.f, 15.0f));        // 위젯의 크기. 캔버스에서 이 위젯의 작업 공간의 크기. 
+        HpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision); // UI 의 충돌체크 끔 (마치 유니티에서의 raycast...)
+    }
+}
+
+void AABCharacterBase::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+
+    Stat->OnHpZero.AddUObject(this, &AABCharacterBase::SetDead);
+    // 이 인스턴스에, 인스턴스의 SetDead함수를 OnHpZero 델리게이트에 등록
 }
 
 void AABCharacterBase::SetCharacterControlData(const UABCharacterControlData* CharacterControlData)
@@ -262,8 +295,9 @@ float AABCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Damag
     // EventInstigator : 가해자
     // DamageCauser : 가해자가 사용한 무기 또는 빙의한 pawn
 
-    // 죽음 구현
-    SetDead();
+    //// 죽음 구현
+    //SetDead();
+    Stat->ApplyDamage(DamageAmount);
 
     return DamageAmount;
 }
@@ -277,6 +311,9 @@ void AABCharacterBase::SetDead()
     // 죽은 몽타주 재생
 
     SetActorEnableCollision(false);
+
+    // HpBar 사라지기
+    HpBar->SetHiddenInGame(true);
 }
 
 void AABCharacterBase::PlayDeadAnimation()
@@ -285,4 +322,20 @@ void AABCharacterBase::PlayDeadAnimation()
 
     AnimInstance->StopAllMontages(0.f);
     AnimInstance->Montage_Play(DeadMontage, 1.f);
+}
+
+void AABCharacterBase::SetupCharacterWidget(UABUserWidget* InUserWidget)
+{
+    // HpBar 등록이 필요하여 헤더 추가 및 구현
+    UABHpBarWidget* HpBarWidget = Cast<UABHpBarWidget>(InUserWidget);
+
+    if (HpBarWidget)
+    {
+        HpBarWidget->SetMaxHp(Stat->GetMaxHp());
+        HpBarWidget->UpdateHpBar(Stat->GetCurrentHp());
+        Stat->OnHpChanged.AddUObject(HpBarWidget, &UABHpBarWidget::UpdateHpBar);
+        // Stat의 CurrentHp 값이 변경될 때 마다 UABHpBarWidget::UpdateHpBar 함수가 호출되도록
+        // OnHpChanged 델리게이트에 위젯 인스턴스의 멤버함수 추가
+        // -> 두 컴포넌트 간의 느슨한 결합
+    }
 }

@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "ABUserWidget.h"
 #include "ABHpBarWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALARENABATTLE_API UABHpBarWidget : public UUserWidget
+class UNREALARENABATTLE_API UABHpBarWidget : public UABUserWidget
 {
 	GENERATED_BODY()
 	
