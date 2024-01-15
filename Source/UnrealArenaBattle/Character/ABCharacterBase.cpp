@@ -13,6 +13,10 @@
 #include "CharacterStat/ABCharacterStatComponent.h"
 #include "UI/ABWidgetComponent.h"
 #include "UI/ABHpBarWidget.h"
+#include "Item/ABWeaponItemData.h"
+
+
+DEFINE_LOG_CATEGORY(LogABCharacter);
 
 // Sets default values
 AABCharacterBase::AABCharacterBase()
@@ -105,6 +109,12 @@ AABCharacterBase::AABCharacterBase()
         HpBar->SetDrawSize(FVector2D(150.f, 15.0f));        // 위젯의 크기. 캔버스에서 이 위젯의 작업 공간의 크기. 
         HpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision); // UI 의 충돌체크 끔 (마치 유니티에서의 raycast...)
     }
+
+
+    // Item Action
+    TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AABCharacterBase::EquipWeapon)));
+    TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AABCharacterBase::DrinkPotion)));
+    TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AABCharacterBase::ReadScroll)));
 }
 
 void AABCharacterBase::PostInitializeComponents()
@@ -338,4 +348,27 @@ void AABCharacterBase::SetupCharacterWidget(UABUserWidget* InUserWidget)
         // OnHpChanged 델리게이트에 위젯 인스턴스의 멤버함수 추가
         // -> 두 컴포넌트 간의 느슨한 결합
     }
+}
+
+void AABCharacterBase::TakeItem(UABItemData* InItemData)
+{
+    if (InItemData)
+    {
+        TakeItemActions[(uint8)InItemData->Type].ItemDelegate.ExecuteIfBound(InItemData);
+    }
+}
+
+void AABCharacterBase::DrinkPotion(UABItemData* InItemData)
+{
+    UE_LOG(LogABCharacter, Log, TEXT("Drink Potion"));
+}
+
+void AABCharacterBase::EquipWeapon(UABItemData* InItemData)
+{
+    UE_LOG(LogABCharacter, Log, TEXT("Equip Weapon"));
+}
+
+void AABCharacterBase::ReadScroll(UABItemData* InItemData)
+{
+    UE_LOG(LogABCharacter, Log, TEXT("Read Scroll"));
 }

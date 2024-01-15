@@ -6,7 +6,11 @@
 #include "GameFramework/Character.h"
 #include "Interface/ABAnimationAttackInterface.h"
 #include "Interface/ABCharacterWidgetInterface.h"
+#include "Interface/ABCharacterItemInterface.h"
 #include "ABCharacterBase.generated.h"
+
+
+DECLARE_LOG_CATEGORY_EXTERN(LogABCharacter, Log, All);
 
 UENUM()
 enum class ECharacterControlType : uint8
@@ -16,8 +20,22 @@ enum class ECharacterControlType : uint8
 };
 
 
+DECLARE_DELEGATE_OneParam(FOnTakeItemDelegate, class UABItemData* /*InItemData*/);
+// 아이템을 처리할 델리게이트
+
+USTRUCT(BlueprintType)
+struct FTakeItemDelegateWrapper
+{
+	GENERATED_BODY()
+	FTakeItemDelegateWrapper() {}
+	FTakeItemDelegateWrapper(const FOnTakeItemDelegate& InItemDelegate) : ItemDelegate(InItemDelegate) {}
+	
+	FOnTakeItemDelegate ItemDelegate;
+};
+
+
 UCLASS()
-class UNREALARENABATTLE_API AABCharacterBase : public ACharacter, public IABAnimationAttackInterface, public IABCharacterWidgetInterface
+class UNREALARENABATTLE_API AABCharacterBase : public ACharacter, public IABAnimationAttackInterface, public IABCharacterWidgetInterface, public IABCharacterItemInterface
 {
 	GENERATED_BODY()
 
@@ -110,4 +128,18 @@ protected:
 	TObjectPtr<class UABWidgetComponent> HpBar;
 
 	virtual void SetupCharacterWidget(class UABUserWidget* InUserWidget) override;			// IABCharacterWidgetInterface 에서 상속받은 순수가상함수
+
+
+protected:
+	// Item Section
+
+	UPROPERTY()
+	TArray<FTakeItemDelegateWrapper> TakeItemActions;
+	// Weapon, Potion, Scroll 아이템 효과 구현 할거라 3가지 함수 바인딩 할 것
+
+	virtual void TakeItem(class UABItemData* InItemData) override;
+
+	virtual void DrinkPotion(class UABItemData* InItemData);
+	virtual void EquipWeapon(class UABItemData* InItemData);
+	virtual void ReadScroll(class UABItemData* InItemData);
 };
