@@ -387,7 +387,12 @@ void AABCharacterBase::EquipWeapon(UABItemData* InItemData)
 
     if (WeaponItemData)
     {
-        Weapon->SetSkeletalMesh(WeaponItemData->WeaponMesh);
+        if (WeaponItemData->WeaponMesh.IsPending())         // 아직 로딩이 안되어 있다면
+        {
+            WeaponItemData->WeaponMesh.LoadSynchronous();   // 동기적으로 로딩하도록 함
+        }
+
+        Weapon->SetSkeletalMesh(WeaponItemData->WeaponMesh.Get());  // TSoftObjectPtr 로 로드한 건 .Get() 으로 가져올 수 있음
     }
 }
 
