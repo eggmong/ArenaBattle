@@ -63,6 +63,11 @@ AABStageGimmick::AABStageGimmick()
 	StateChangeActions.Add(EStageState::REWARD, FStageChangedDelegateWrapper(FOnStageChangedDelegate::CreateUObject(this, &AABStageGimmick::SetChooseReward)));
 	StateChangeActions.Add(EStageState::NEXT, FStageChangedDelegateWrapper(FOnStageChangedDelegate::CreateUObject(this, &AABStageGimmick::SetChooseNext)));
 
+	// Fight Section
+
+	OpponentSpawnTime = 2.0f;
+	OpponentClass = AABCharacterNonPlayer::StaticClass();
+	// 생성시킬 npc 클래스 지정
 }
 
 void AABStageGimmick::OnConstruction(const FTransform& Transform)
@@ -76,14 +81,51 @@ void AABStageGimmick::OnStageTriggerBeginOverlap(UPrimitiveComponent* Overlapped
 {
 	// 스테이지 트리거와 충돌
 	// (플레이어가 스테이지에 들어왔다는 걸 감지)
+
+	SetState(EStageState::FIGHT);
 }
 
 void AABStageGimmick::OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	// 보상 상자를 열고 다음 스테이지로 넘어갈 때
 	// 게이트 트리거와 충돌
 	// 플레이어가 어느 게이트로 갔는지 감지
 
+	check(OverlappedComponent->ComponentTags.Num() == 1);
+	// 위에 생성자에서 for문 돌면서 Gate마다 하나씩 태그 달아줬었음. 1개를 초과한 태그갯수는 문제가 있는거임. 그걸 체크해봄.
 
+	FName ComponentTag = OverlappedComponent->ComponentTags[0];
+	// 태그 정보 가져옴
+
+	FName SocketName = FName(*ComponentTag.ToString().Left(2));
+	// 맵의 기반이 되는 SM_SQUARE 열어보면 Socket Manager 볼 수 있음. 거기에 -XGate, +XGate... 다 있음.
+	// 왼쪽 2개만 남김. +X
+
+	check(Stage->DoesSocketExist(SocketName));
+	// 해당 소켓 이름이 있는지 확인 (+X)
+
+	FVector NewLocation = Stage->GetSocketLocation(SocketName);
+	// 소켓 이름을 통해 소켓의 위치를 가져옴
+
+	TArray<FOverlapResult> OverlapResults;
+
+	FCollisionQueryParams CollisionQueryParam(SCENE_QUERY_STAT(GateTrigger), false, this);	// this : 자신을 제외하고 검사 쿼리
+	
+	bool bResult = GetWorld()->OverlapMultiByObjectType(			// NewLocation 위치에 무언가가 배치되어 있는지 확인 (OverlapResults 변수에 리턴)
+		OverlapResults,
+		NewLocation,
+		FQuat::Identity,
+		FCollisionObjectQueryParams::InitType::AllObjects,			// 모든 object 타입에 대해서
+		FCollisionShape::MakeSphere(775.0f),						// 해당 위치에 원 생성
+		CollisionQueryParam
+	);
+
+	if (!bResult)
+	{
+		// 해당 위치에 아무것도 없다면 기믹 액터 배치 (새로운 맵 생성)
+
+		GetWorld()->SpawnActor<AABStageGimmick>(NewLocation, FRotator::ZeroRotator);
+	}
 }
 
 void AABStageGimmick::OpenAllGates()
@@ -121,7 +163,7 @@ void AABStageGimmick::SetReady()
 		GateTrigger->SetCollisionProfileName(TEXT("NoCollision"));			// 문에 대한 충돌은 일어날 필요가 없음, 비활성화
 	}
 
-	CloseAllGates();
+	OpenAllGates();
 }
 
 void AABStageGimmick::SetFight()
@@ -134,6 +176,9 @@ void AABStageGimmick::SetFight()
 	}
 
 	CloseAllGates();
+
+	GetWorld()->GetTimerManager().SetTimer(OpponentTimerHandle, this, &AABStageGimmick::OnOpponentSpawn, OpponentSpawnTime, false);
+	// OpponentSpawnTime 이후에 npc Spawn
 }
 
 void AABStageGimmick::SetChooseReward()
@@ -160,7 +205,9 @@ void AABStageGimmick::SetChooseNext()
 
 void AABStageGimmick::OnOpponentDestroyed(AActor* DestroyedActor)
 {
+	// npc 가 죽었으므로 다음 단계 이동 구현
 
+	SetState(EStageState::REWARD);
 }
 
 void AABStageGimmick::OnOpponentSpawn()
