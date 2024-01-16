@@ -47,13 +47,13 @@ void AABItemBox::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor
 {
 	if (Item == nullptr)
 	{
-		// 꽝 아이템일 경우 그냥 상자 삭제하고 리턴
-		// 
+		// 꽝 아이템일 경우 이펙트 출력 없이 상자 삭제하고 리턴
 		Destroy();
 		return;
 	}
 
-	// 상자에 닿았을 때 호출 (Trigger 델리게이트에 등록했었음)
+	// 상자에 닿았을 때 이 함수 호출 (Trigger 델리게이트에 등록했었음, 위 코드 참조)
+	// 상자에 닿은 Actor가 IABCharacterItemInterface 를 구현했다면 Cast 했을 때 nullptr이 아닐것.
 	IABCharacterItemInterface* OverlappingPawn = Cast<IABCharacterItemInterface>(OtherActor);
 	if (OverlappingPawn)
 	{

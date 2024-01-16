@@ -112,9 +112,17 @@ AABCharacterBase::AABCharacterBase()
 
 
     // Item Action
+    // 멤버함수와 바인딩된 델리게이트를 TArray에 하나씩 넣음
+    // enum class EItemType : uint8 에서 정의한 열거형값 순서와 동일함. Weapon, Potion, Scroll
     TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AABCharacterBase::EquipWeapon)));
     TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AABCharacterBase::DrinkPotion)));
     TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AABCharacterBase::ReadScroll)));
+
+
+    // Weapon Component
+    Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
+    Weapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
+    // 무기 스켈레탈 메쉬 컴포넌트를 캐릭터 메쉬의 hand_rSocket 라고 명명된 곳에 부착 (캐릭터의 특정 본에 무기가 부착되어 돌아다닐 수 있도록)
 }
 
 void AABCharacterBase::PostInitializeComponents()
@@ -352,9 +360,17 @@ void AABCharacterBase::SetupCharacterWidget(UABUserWidget* InUserWidget)
 
 void AABCharacterBase::TakeItem(UABItemData* InItemData)
 {
+    // 캐릭터가 아이템을 가졌을 때,
+    // 아이템 데이터에 있는 열거형 값에 따라 서로 다른 액션을 취하도록 구현
+
     if (InItemData)
     {
         TakeItemActions[(uint8)InItemData->Type].ItemDelegate.ExecuteIfBound(InItemData);
+        // ExecuteIfBound : 바인딩된 함수가 존재하면 호출
+
+        // 위의 생성자에서 TakeItemActions 에 추가했던 델리게이트와 바인딩된 함수들은
+        // EItemType 에 정의했던 열거형 값들과 동일한 순서로 추가되었음 Weapon = 0, Potion = 1...
+        // 그래서 (uint8)InItemData->Type 으로 해도 괜찮음
     }
 }
 
@@ -366,6 +382,13 @@ void AABCharacterBase::DrinkPotion(UABItemData* InItemData)
 void AABCharacterBase::EquipWeapon(UABItemData* InItemData)
 {
     UE_LOG(LogABCharacter, Log, TEXT("Equip Weapon"));
+    
+    UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InItemData);
+
+    if (WeaponItemData)
+    {
+        Weapon->SetSkeletalMesh(WeaponItemData->WeaponMesh);
+    }
 }
 
 void AABCharacterBase::ReadScroll(UABItemData* InItemData)

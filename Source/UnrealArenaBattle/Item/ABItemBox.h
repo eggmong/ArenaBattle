@@ -29,6 +29,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Item")
 	TObjectPtr<class UABItemData> Item;
 	// 부모 클래스(UABItemData) 로 만들어서, Weapon이나 Scroll이나 Potion이나 다 대응 가능
+	// (ABWeaponItemData 등 아이템들이 UABItemData를 상속 받아 구현되어 있음!)
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);

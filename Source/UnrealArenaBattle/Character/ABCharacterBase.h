@@ -10,6 +10,7 @@
 #include "ABCharacterBase.generated.h"
 
 
+// 로그 카테고리 선언 (LogTemp 처럼)
 DECLARE_LOG_CATEGORY_EXTERN(LogABCharacter, Log, All);
 
 UENUM()
@@ -21,7 +22,8 @@ enum class ECharacterControlType : uint8
 
 
 DECLARE_DELEGATE_OneParam(FOnTakeItemDelegate, class UABItemData* /*InItemData*/);
-// 아이템을 처리할 델리게이트
+// 아이템을 처리할 델리게이트 선언
+// 배열로 관리를 하려고 하는데, 쉬운 방법은 구조체를 만들어 감싸는 것? 이라고 한다
 
 USTRUCT(BlueprintType)
 struct FTakeItemDelegateWrapper
@@ -133,8 +135,13 @@ protected:
 protected:
 	// Item Section
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USkeletalMeshComponent> Weapon;
+	// 무기 먹었을 때 손에 쥐어지도록 하기 위해, 무기를 담을 스켈레탈 메쉬 컴포넌트 변수 생성
+
 	UPROPERTY()
 	TArray<FTakeItemDelegateWrapper> TakeItemActions;
+	// 위에서 선언했던 FOnTakeItemDelegate 델리게이트를 감싸는 FTakeItemDelegateWrapper 라는 구조체를 배열로 만듦
 	// Weapon, Potion, Scroll 아이템 효과 구현 할거라 3가지 함수 바인딩 할 것
 
 	virtual void TakeItem(class UABItemData* InItemData) override;
