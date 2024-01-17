@@ -10,6 +10,13 @@
 #include "ABComboActionData.h"
 #include "Physics/ABCollision.h"
 #include "Engine/DamageEvents.h"
+#include "CharacterStat/ABCharacterStatComponent.h"
+#include "UI/ABWidgetComponent.h"
+#include "UI/ABHpBarWidget.h"
+#include "Item/ABWeaponItemData.h"
+
+
+DEFINE_LOG_CATEGORY(LogABCharacter);
 
 // Sets default values
 AABCharacterBase::AABCharacterBase()
@@ -80,6 +87,50 @@ AABCharacterBase::AABCharacterBase()
     {
         DeadMontage = DeadActionMontageRef.Object;
     }
+
+
+    // Stat Component
+    Stat = CreateDefaultSubobject<UABCharacterStatComponent>(TEXT("Stat"));
+
+
+    // Widget Component
+    // 위젯의 경우 애니메이션 블루프린트와 유사하게, 클래스 정보를 등록해서
+    // BeginPlay가 시작 되면 그 때 클래스 정보로부터 인스턴스가 생성되는 형태
+    // 그래서 위젯 블루프린트의 레퍼런스를 가져와, ConstructorHelper 로 클래스 정보를 가져와야 함
+    HpBar = CreateDefaultSubobject<UABWidgetComponent>(TEXT("Widget"));
+    HpBar->SetupAttachment(GetMesh());
+    HpBar->SetRelativeLocation(FVector(0.f, 0.f, 180.f));
+    static ConstructorHelpers::FClassFinder<UUserWidget> HpBarWidgetRef(TEXT("/Game/ArenaBattle/UI/WBP_HpBar.WBP_HpBar_C")); // 클래스 정보니까 _C 붙임
+
+    if (HpBarWidgetRef.Class)
+    {
+        HpBar->SetWidgetClass(HpBarWidgetRef.Class);
+        HpBar->SetWidgetSpace(EWidgetSpace::Screen);        // 위젯 위치를 2D 공간으로 지정. 캔버스.
+        HpBar->SetDrawSize(FVector2D(150.f, 15.0f));        // 위젯의 크기. 캔버스에서 이 위젯의 작업 공간의 크기. 
+        HpBar->SetCollisionEnabled(ECollisionEnabled::NoCollision); // UI 의 충돌체크 끔 (마치 유니티에서의 raycast...)
+    }
+
+
+    // Item Action
+    // 멤버함수와 바인딩된 델리게이트를 TArray에 하나씩 넣음
+    // enum class EItemType : uint8 에서 정의한 열거형값 순서와 동일함. Weapon, Potion, Scroll
+    TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AABCharacterBase::EquipWeapon)));
+    TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AABCharacterBase::DrinkPotion)));
+    TakeItemActions.Add(FTakeItemDelegateWrapper(FOnTakeItemDelegate::CreateUObject(this, &AABCharacterBase::ReadScroll)));
+
+
+    // Weapon Component
+    Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
+    Weapon->SetupAttachment(GetMesh(), TEXT("hand_rSocket"));
+    // 무기 스켈레탈 메쉬 컴포넌트를 캐릭터 메쉬의 hand_rSocket 라고 명명된 곳에 부착 (캐릭터의 특정 본에 무기가 부착되어 돌아다닐 수 있도록)
+}
+
+void AABCharacterBase::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+
+    Stat->OnHpZero.AddUObject(this, &AABCharacterBase::SetDead);
+    // 이 인스턴스에, 인스턴스의 SetDead함수를 OnHpZero 델리게이트에 등록
 }
 
 void AABCharacterBase::SetCharacterControlData(const UABCharacterControlData* CharacterControlData)
@@ -218,7 +269,7 @@ void AABCharacterBase::AttackHitCheck()
 
     const float AttackRange = 40.0f;
     const float AttackRadius = 50.0f;
-    const float AttackDamage = 30.0f;
+    const float AttackDamage = 100.0f;
     const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
     // GetActorLocation() : 현재 액터 위치
     // 더하기
@@ -262,8 +313,9 @@ float AABCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Damag
     // EventInstigator : 가해자
     // DamageCauser : 가해자가 사용한 무기 또는 빙의한 pawn
 
-    // 죽음 구현
-    SetDead();
+    //// 죽음 구현
+    //SetDead();
+    Stat->ApplyDamage(DamageAmount);
 
     return DamageAmount;
 }
@@ -277,6 +329,9 @@ void AABCharacterBase::SetDead()
     // 죽은 몽타주 재생
 
     SetActorEnableCollision(false);
+
+    // HpBar 사라지기
+    HpBar->SetHiddenInGame(true);
 }
 
 void AABCharacterBase::PlayDeadAnimation()
@@ -285,4 +340,63 @@ void AABCharacterBase::PlayDeadAnimation()
 
     AnimInstance->StopAllMontages(0.f);
     AnimInstance->Montage_Play(DeadMontage, 1.f);
+}
+
+void AABCharacterBase::SetupCharacterWidget(UABUserWidget* InUserWidget)
+{
+    // HpBar 등록이 필요하여 헤더 추가 및 구현
+    UABHpBarWidget* HpBarWidget = Cast<UABHpBarWidget>(InUserWidget);
+
+    if (HpBarWidget)
+    {
+        HpBarWidget->SetMaxHp(Stat->GetMaxHp());
+        HpBarWidget->UpdateHpBar(Stat->GetCurrentHp());
+        Stat->OnHpChanged.AddUObject(HpBarWidget, &UABHpBarWidget::UpdateHpBar);
+        // Stat의 CurrentHp 값이 변경될 때 마다 UABHpBarWidget::UpdateHpBar 함수가 호출되도록
+        // OnHpChanged 델리게이트에 위젯 인스턴스의 멤버함수 추가
+        // -> 두 컴포넌트 간의 느슨한 결합
+    }
+}
+
+void AABCharacterBase::TakeItem(UABItemData* InItemData)
+{
+    // 캐릭터가 아이템을 가졌을 때,
+    // 아이템 데이터에 있는 열거형 값에 따라 서로 다른 액션을 취하도록 구현
+
+    if (InItemData)
+    {
+        TakeItemActions[(uint8)InItemData->Type].ItemDelegate.ExecuteIfBound(InItemData);
+        // ExecuteIfBound : 바인딩된 함수가 존재하면 호출
+
+        // 위의 생성자에서 TakeItemActions 에 추가했던 델리게이트와 바인딩된 함수들은
+        // EItemType 에 정의했던 열거형 값들과 동일한 순서로 추가되었음 Weapon = 0, Potion = 1...
+        // 그래서 (uint8)InItemData->Type 으로 해도 괜찮음
+    }
+}
+
+void AABCharacterBase::DrinkPotion(UABItemData* InItemData)
+{
+    UE_LOG(LogABCharacter, Log, TEXT("Drink Potion"));
+}
+
+void AABCharacterBase::EquipWeapon(UABItemData* InItemData)
+{
+    UE_LOG(LogABCharacter, Log, TEXT("Equip Weapon"));
+    
+    UABWeaponItemData* WeaponItemData = Cast<UABWeaponItemData>(InItemData);
+
+    if (WeaponItemData)
+    {
+        if (WeaponItemData->WeaponMesh.IsPending())         // 아직 로딩이 안되어 있다면
+        {
+            WeaponItemData->WeaponMesh.LoadSynchronous();   // 동기적으로 로딩하도록 함
+        }
+
+        Weapon->SetSkeletalMesh(WeaponItemData->WeaponMesh.Get());  // TSoftObjectPtr 로 로드한 건 .Get() 으로 가져올 수 있음
+    }
+}
+
+void AABCharacterBase::ReadScroll(UABItemData* InItemData)
+{
+    UE_LOG(LogABCharacter, Log, TEXT("Read Scroll"));
 }
