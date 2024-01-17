@@ -15,6 +15,13 @@ public:
 	// Sets default values for this actor's properties
 	AABItemBox();
 
+	FORCEINLINE class UBoxComponent* GetTrigger() { return Trigger; }
+
+protected:
+	// 액터의 세팅이 마무리 되는 시점에서 호출되는 함수 오버라이드하여 사용
+	// -> 아이템 박스가 초기화 되었을 때, 에셋 매니저가 제공하고 있는 목록들을 살펴서
+	// 이 중 하나를 랜덤으로 설정하려고
+	virtual void PostInitializeComponents() override;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = Box)
@@ -26,7 +33,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Effect)
 	TObjectPtr<class UParticleSystemComponent> Effect;
 
-	UPROPERTY(EditAnywhere, Category = "Item")
+	UPROPERTY(EditAnywhere, Category = Item)
 	TObjectPtr<class UABItemData> Item;
 	// 부모 클래스(UABItemData) 로 만들어서, Weapon이나 Scroll이나 Potion이나 다 대응 가능
 	// (ABWeaponItemData 등 아이템들이 UABItemData를 상속 받아 구현되어 있음!)

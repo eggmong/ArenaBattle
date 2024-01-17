@@ -7,6 +7,8 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Physics/ABCollision.h"
 #include "Interface/ABCharacterItemInterface.h"
+#include "Engine/AssetManager.h"
+#include "Item/ABItemData.h"
 
 // Sets default values
 AABItemBox::AABItemBox()
@@ -41,6 +43,30 @@ AABItemBox::AABItemBox()
 		Effect->SetTemplate(EffectRef.Object);
 		Effect->bAutoActivate = false;							// 바로 이펙트 발동되지 않도록 auto 끄기
 	}
+}
+
+void AABItemBox::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	UAssetManager& Manager = UAssetManager::Get();
+
+	TArray<FPrimaryAssetId> Assets;
+
+	Manager.GetPrimaryAssetIdList(TEXT("ABItemData"), Assets);		// Asset ID 목록 중에 태그가 ABItemData 인거 가져와서 Assets 배열에 저장
+	ensure(0 < Assets.Num());
+
+	int32 RandomIndex = FMath::RandRange(0, Assets.Num() - 1);
+
+	FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(Assets[RandomIndex]));	// 약참조를 걸어 로딩이 되어있지 않다면 로딩해줌
+	if (AssetPtr.IsPending())
+	{
+		AssetPtr.LoadSynchronous();
+	}
+
+	Item = Cast<UABItemData>(AssetPtr.Get());
+
+	ensure(Item);
 }
 
 void AABItemBox::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)

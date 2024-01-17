@@ -269,7 +269,7 @@ void AABCharacterBase::AttackHitCheck()
 
     const float AttackRange = 40.0f;
     const float AttackRadius = 50.0f;
-    const float AttackDamage = 30.0f;
+    const float AttackDamage = 100.0f;
     const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
     // GetActorLocation() : 현재 액터 위치
     // 더하기

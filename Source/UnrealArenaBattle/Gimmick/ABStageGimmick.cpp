@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "Physics/ABCollision.h"
 #include "Character/ABCharacterNonPlayer.h"
+#include "Item/ABItemBox.h"
 
 // Sets default values
 AABStageGimmick::AABStageGimmick()
@@ -62,12 +63,22 @@ AABStageGimmick::AABStageGimmick()
 	StateChangeActions.Add(EStageState::FIGHT, FStageChangedDelegateWrapper(FOnStageChangedDelegate::CreateUObject(this, &AABStageGimmick::SetFight)));
 	StateChangeActions.Add(EStageState::REWARD, FStageChangedDelegateWrapper(FOnStageChangedDelegate::CreateUObject(this, &AABStageGimmick::SetChooseReward)));
 	StateChangeActions.Add(EStageState::NEXT, FStageChangedDelegateWrapper(FOnStageChangedDelegate::CreateUObject(this, &AABStageGimmick::SetChooseNext)));
+	
 
 	// Fight Section
-
 	OpponentSpawnTime = 2.0f;
 	OpponentClass = AABCharacterNonPlayer::StaticClass();
 	// 생성시킬 npc 클래스 지정
+
+
+	// Reward Section
+	RewardBoxClass = AABItemBox::StaticClass();		// 클래스 지정
+
+	for (FName GateSocket : GateSockets)			// 위에 있던 게이트 소켓에 있는 값들을 참고해서 상자 spawn
+	{
+		FVector BoxLocation = Stage->GetSocketLocation(GateSocket) / 2;
+		RewardBoxLocations.Add(GateSocket, BoxLocation);
+	}
 }
 
 void AABStageGimmick::OnConstruction(const FTransform& Transform)
@@ -183,13 +194,14 @@ void AABStageGimmick::SetFight()
 
 void AABStageGimmick::SetChooseReward()
 {
-	StageTrigger->SetCollisionProfileName(TEXT("NoCollision"));				
+	StageTrigger->SetCollisionProfileName(TEXT("NoCollision"));
 	for (auto GateTrigger : GateTriggers)
 	{
-		GateTrigger->SetCollisionProfileName(TEXT("NoCollision"));			
+		GateTrigger->SetCollisionProfileName(TEXT("NoCollision"));
 	}
 
 	CloseAllGates();
+	SpawnRewardBoxes();
 }
 
 void AABStageGimmick::SetChooseNext()
@@ -223,5 +235,47 @@ void AABStageGimmick::OnOpponentSpawn()
 	{
 		ABOpponentCharacter->OnDestroyed.AddDynamic(this, &AABStageGimmick::OnOpponentDestroyed);
 		// npc 가 Destroy 될 때에 함수 바인딩
+	}
+}
+
+void AABStageGimmick::OnRewardTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	for (const auto& RewardBox : RewardBoxes)
+	{
+		if (RewardBox.IsValid())						// 약참조이기 때문에 유효성 확신 불가, 그래서 IsValid로 확인
+		{
+			AABItemBox* ValidItemBox = RewardBox.Get();	// Get 함수로 포인터 얻어오기
+
+			AActor* OverlappedBox = OverlappedComponent->GetOwner();
+			// 현재 이벤트가 발생한 component의 오너 -> GetOwner
+
+			if (OverlappedBox != ValidItemBox)
+			{
+				// 이벤트가 발생한 오너가 RewardBox 와 같지 않다면
+				// 나머지 박스 소멸
+				ValidItemBox->Destroy();
+			}
+		}
+	}
+
+	SetState(EStageState::NEXT);
+}
+
+void AABStageGimmick::SpawnRewardBoxes()
+{
+	for (const auto& RewardBoxLocation : RewardBoxLocations)
+	{
+		FVector WorldSpawnLocation = GetActorLocation() + RewardBoxLocation.Value + FVector(0.0f, 0.0f, 30.0f);
+
+
+		AActor* ItemActor = GetWorld()->SpawnActor(RewardBoxClass, &WorldSpawnLocation, &FRotator::ZeroRotator);
+
+		AABItemBox* RewardBoxActor = Cast<AABItemBox>(ItemActor);
+		if (RewardBoxActor)
+		{
+			RewardBoxActor->Tags.Add(RewardBoxLocation.Key);
+			RewardBoxActor->GetTrigger()->OnComponentBeginOverlap.AddDynamic(this, &AABStageGimmick::OnRewardTriggerBeginOverlap);
+			RewardBoxes.Add(RewardBoxActor);
+		}
 	}
 }

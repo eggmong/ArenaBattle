@@ -119,5 +119,32 @@ protected:
 	void OnOpponentDestroyed(AActor* DestroyedActor);						// npc가 죽으면 보상 단계로 진행되어야 하기 때문에, 그걸 위한 함수
 
 	FTimerHandle OpponentTimerHandle;
-	void OnOpponentSpawn();													
+	void OnOpponentSpawn();						
+
+
+protected:
+	// Reward Section
+	
+	UPROPERTY(VisibleAnywhere, Category = Reward, Meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class AABItemBox> RewardBoxClass;
+	// 위의 npc 스폰과 동일하게 박스에 대해서 스폰하도록 클래스 지정
+	// AABItemBox 상속 받은 애들을 대상으로 한정
+
+	UPROPERTY(VisibleAnywhere, Category = Reward, Meta = (AllowPrivateAccess = "true"))
+	TArray<TWeakObjectPtr<class AABItemBox>> RewardBoxes;
+	// TWeakObjectPtr : 약참조 템플릿
+	// RewardBoxes 는 스테이지 기믹 액터하곤 무관하게 외부의 영향 혹은 내부의 로직에 의해 스스로 소멸 가능함
+	// TObjectPtr 로 참조하면 강참조라서, 엔진이 메모리에서 소멸시키지 않을 수 있음
+	// 액터와 무관하게 동작해야 하는 다른 액터들을 참조해야 할 경우엔 TWeakObjectPtr 로 약참조를 할 것
+
+	TMap<FName, FVector> RewardBoxLocations;
+	// 리워드 박스를 생성시킬 위치들을 각각 키로 관리하기 위해 TMap으로 생성
+
+	UFUNCTION()
+	void OnRewardTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	// 오버랩 이벤트가 발동될 때 실행시킬 함수
+
+
+	void SpawnRewardBoxes();
+	// 박스 스폰 하는 함수
 };
