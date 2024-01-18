@@ -400,3 +400,13 @@ void AABCharacterBase::ReadScroll(UABItemData* InItemData)
 {
     UE_LOG(LogABCharacter, Log, TEXT("Read Scroll"));
 }
+
+int32 AABCharacterBase::GetLevel()
+{
+    return Stat->GetCurrentLevel();
+}
+
+void AABCharacterBase::SetLevel(int32 InNewLevel)
+{
+    Stat->SetLevelStat(InNewLevel);
+}

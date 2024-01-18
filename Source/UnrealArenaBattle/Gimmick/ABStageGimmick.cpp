@@ -79,6 +79,10 @@ AABStageGimmick::AABStageGimmick()
 		FVector BoxLocation = Stage->GetSocketLocation(GateSocket) / 2;
 		RewardBoxLocations.Add(GateSocket, BoxLocation);
 	}
+
+
+	// Stage Stat Section
+	CurrentStageNum = 0;			// 첫번째 스테이지에 나타나는 기믹들은 0번째 값을 가지게 될 것
 }
 
 void AABStageGimmick::OnConstruction(const FTransform& Transform)
@@ -135,7 +139,14 @@ void AABStageGimmick::OnGateTriggerBeginOverlap(UPrimitiveComponent* OverlappedC
 	{
 		// 해당 위치에 아무것도 없다면 기믹 액터 배치 (새로운 맵 생성)
 
-		GetWorld()->SpawnActor<AABStageGimmick>(NewLocation, FRotator::ZeroRotator);
+		FTransform NewTransform(NewLocation);
+
+		AABStageGimmick* NewGimmick = GetWorld()->SpawnActorDeferred<AABStageGimmick>(AABStageGimmick::StaticClass(), NewTransform);
+		if (NewGimmick)
+		{
+			NewGimmick->SetStageNum(CurrentStageNum + 1);
+			NewGimmick->FinishSpawning(NewTransform);
+		}
 	}
 }
 
@@ -224,17 +235,35 @@ void AABStageGimmick::OnOpponentDestroyed(AActor* DestroyedActor)
 
 void AABStageGimmick::OnOpponentSpawn()
 {
-	const FVector SpawnLocation = GetActorLocation() + FVector::UpVector * 88.0f;
+	//const FVector SpawnLocation = GetActorLocation() + FVector::UpVector * 88.0f;
 
-	AActor* OpponentActor = GetWorld()->SpawnActor(OpponentClass, &SpawnLocation, &FRotator::ZeroRotator);
+	//AActor* OpponentActor = GetWorld()->SpawnActor(OpponentClass, &SpawnLocation, &FRotator::ZeroRotator);
 	// OpponentClass 는 TSubclassOf 템플릿으로 한정해놨으므로
 	// AABCharacterNonPlayer 를 상속받은 클래스들만 Spawn 하게 될 것
 
-	AABCharacterNonPlayer* ABOpponentCharacter = Cast<AABCharacterNonPlayer>(OpponentActor);		// 그래도 Cast로 한번 더 확인
+	/*
+	+SpawnActor 를 호출하면, BeginPlay 가 바로 호출이 됨
+	그래서 OpponentActor 가 갖고 있는 Stat의 UABCharacterStatComponent::BeginPlay() 도 호출이 됨
+	근데 CurrentLevel 이 생성자에서 기본 1로 설정되어 있어서,
+	SpawnActor 호출 후 밑의 ABOpponentCharacter->SetLevel(CurrentStageNum); 를 호출할 때 1로 불러지게 됨
+	그래서 지연 생성을 해야 한다. SpawnActorDeferred
+	*/
+
+	const FTransform SpawnTransform(GetActorLocation() + FVector::UpVector * 88.0f);
+
+	AABCharacterNonPlayer* ABOpponentCharacter = GetWorld()->SpawnActorDeferred<AABCharacterNonPlayer>(OpponentClass, SpawnTransform);
+
 	if (ABOpponentCharacter)
 	{
 		ABOpponentCharacter->OnDestroyed.AddDynamic(this, &AABStageGimmick::OnOpponentDestroyed);
 		// npc 가 Destroy 될 때에 함수 바인딩
+
+		ABOpponentCharacter->SetLevel(CurrentStageNum);
+		// 스테이지 넘버에 맞춰 CurrentLevel 설정
+
+		ABOpponentCharacter->FinishSpawning(SpawnTransform);
+		// 이 함수가 호출되고 나서야 캐릭터가 소유하고 있는 StatComponent의 BeginPlay가 호출 됨.
+		// 그래서 CurrentLevel 이 스테이지 넘버로 맞춰지게 됨.
 	}
 }
 
@@ -265,17 +294,32 @@ void AABStageGimmick::SpawnRewardBoxes()
 {
 	for (const auto& RewardBoxLocation : RewardBoxLocations)
 	{
-		FVector WorldSpawnLocation = GetActorLocation() + RewardBoxLocation.Value + FVector(0.0f, 0.0f, 30.0f);
+		//FVector WorldSpawnLocation = GetActorLocation() + RewardBoxLocation.Value + FVector(0.0f, 0.0f, 30.0f);
 
+		FTransform SpawnTransform(GetActorLocation() + RewardBoxLocation.Value + FVector(0.0f, 0.0f, 30.0f));
 
-		AActor* ItemActor = GetWorld()->SpawnActor(RewardBoxClass, &WorldSpawnLocation, &FRotator::ZeroRotator);
+		AABItemBox* RewardBoxActor = GetWorld()->SpawnActorDeferred<AABItemBox>(RewardBoxClass, SpawnTransform);
 
-		AABItemBox* RewardBoxActor = Cast<AABItemBox>(ItemActor);
 		if (RewardBoxActor)
 		{
 			RewardBoxActor->Tags.Add(RewardBoxLocation.Key);
 			RewardBoxActor->GetTrigger()->OnComponentBeginOverlap.AddDynamic(this, &AABStageGimmick::OnRewardTriggerBeginOverlap);
+			// 상자 자체에서 설정한 델리게이트로 인해 이벤트가 발생해버리면 제어하기가 불편...
+			// 상자에 설정된 델리게이트의 타이밍을 뒤로 미루고
+			// 기믹의 진행을 위해서 설정된 델리게이트를 먼저 설정하도록 변경했음
+			// -> Trigger->OnComponentBeginOverlap.AddDynamic(this, &AABItemBox::OnOverlapBegin); 이 호출구문을
+			// PostInitializeComponents 에서 호출하도록 옮김.
+			// SpawnActorDeferred 로 바꿨고.
+
 			RewardBoxes.Add(RewardBoxActor);
+		}
+	}
+
+	for (const auto& RewardBox : RewardBoxes)
+	{
+		if (RewardBox.IsValid())
+		{
+			RewardBox.Get()->FinishSpawning(RewardBox.Get()->GetActorTransform());
 		}
 	}
 }

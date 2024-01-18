@@ -32,7 +32,7 @@ public:
 public:
 	// Character Stat Data Section
 	
-	FORCEINLINE FABCharacterStat GetCharacterStat(int32 InLevel) const { return CharacterStatTable.IsValidIndex(InLevel) ? CharacterStatTable[InLevel] : FABCharacterStat(); }
+	FORCEINLINE FABCharacterStat GetCharacterStat(int32 InLevel) const { return CharacterStatTable.IsValidIndex(InLevel - 1) ? CharacterStatTable[InLevel - 1] : FABCharacterStat(); }
 	// 레벨 정보를 넣으면 레벨에 해당하는 구조체 정보를 리턴
 	// (IsValidIndex 로 유효한 인덱스인지 확인 후에)
 	// 유효하지 않으면 기본 생성자를 만들어 넘김
