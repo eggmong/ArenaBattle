@@ -1,4 +1,4 @@
-
+﻿
 #pragma once
 
 #include "CoreMinimal.h"
@@ -35,7 +35,11 @@ struct FABCharacterStat : public FTableRowBase
 
 		FABCharacterStat Result;
 		float* ResultPtr = reinterpret_cast<float*>(&Result);
+
 		int32 StatNum = sizeof(FABCharacterStat) / sizeof(float);
+		// 모든 변수가 float 형이라서 구조체 크기 / float 사이즈만큼 나누면
+		// 각 구조체의 속성들의 index 위치를 알 수 있음
+
 		for (int32 i = 0; i < StatNum; i++)
 		{
 			ResultPtr[i] = ThisPtr[i] + OtherPtr[i];
