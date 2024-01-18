@@ -57,7 +57,7 @@ void AABItemBox::PostInitializeComponents()
 	Manager.GetPrimaryAssetIdList(TEXT("ABItemData"), Assets);		// Asset ID 목록 중에 태그가 ABItemData 인거 가져와서 Assets 배열에 저장
 	ensure(0 < Assets.Num());
 
-	int32 RandomIndex = FMath::RandRange(0, Assets.Num() - 1);
+	int32 RandomIndex = FMath::RandRange(0, Assets.Num() - 1); //FMath::RandRange(2, 2/*Assets.Num() - 1*/);
 
 	FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(Assets[RandomIndex]));	// 약참조를 걸어 로딩이 되어있지 않다면 로딩해줌
 	if (AssetPtr.IsPending())

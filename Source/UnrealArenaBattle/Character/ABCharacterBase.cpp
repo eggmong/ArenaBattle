@@ -393,6 +393,8 @@ void AABCharacterBase::EquipWeapon(UABItemData* InItemData)
         }
 
         Weapon->SetSkeletalMesh(WeaponItemData->WeaponMesh.Get());  // TSoftObjectPtr 로 로드한 건 .Get() 으로 가져올 수 있음
+
+        Stat->SetModifierStat(WeaponItemData->ModifierStat);
     }
 }
 
