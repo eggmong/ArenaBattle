@@ -177,7 +177,7 @@ void AABCharacterBase::ComboActionBegin()
     GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
     // Animation Setting
-    const float AttackSpeedRate = 1.f;
+    const float AttackSpeedRate = Stat->GetTotalStat().AttackSpeed;
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     AnimInstance->Montage_Play(ComboActionMontage, AttackSpeedRate);
 
@@ -210,7 +210,7 @@ void AABCharacterBase::SetComboCheckTimer()
     // 각 프레임 정보가 ComboIndex와 유효한지 검사
     ensure(ComboActionData->EffectiveFrameCount.IsValidIndex(ComboIndex));
 
-    const float AttackSpeedRate = 1.f;
+    const float AttackSpeedRate = Stat->GetTotalStat().AttackSpeed;
 
     // 각 액션마다 콤보가 발동할 시간 정보를 얻을 수 있음 
     float ComboEffectiveTime = (ComboActionData->EffectiveFrameCount[ComboIndex] / ComboActionData->FrameRate) / AttackSpeedRate;
@@ -267,9 +267,9 @@ void AABCharacterBase::AttackHitCheck()
 
 
 
-    const float AttackRange = 40.0f;
+    const float AttackRange = Stat->GetTotalStat().AttackRange;
     const float AttackRadius = 50.0f;
-    const float AttackDamage = 100.0f;
+    const float AttackDamage = Stat->GetTotalStat().Attack;
     const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
     // GetActorLocation() : 현재 액터 위치
     // 더하기
@@ -349,7 +349,7 @@ void AABCharacterBase::SetupCharacterWidget(UABUserWidget* InUserWidget)
 
     if (HpBarWidget)
     {
-        HpBarWidget->SetMaxHp(Stat->GetMaxHp());
+        HpBarWidget->SetMaxHp(Stat->GetTotalStat().MaxHp);
         HpBarWidget->UpdateHpBar(Stat->GetCurrentHp());
         Stat->OnHpChanged.AddUObject(HpBarWidget, &UABHpBarWidget::UpdateHpBar);
         // Stat의 CurrentHp 값이 변경될 때 마다 UABHpBarWidget::UpdateHpBar 함수가 호출되도록
