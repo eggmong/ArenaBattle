@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -9,7 +9,7 @@
 /**
  * 
  */
-// °ø°ÝÇÏ´Â ³ëµå
+// ê³µê²©í•˜ëŠ” ë…¸ë“œ
 UCLASS()
 class UNREALARENABATTLE_API UBTTask_Attack : public UBTTaskNode
 {

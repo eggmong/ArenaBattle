@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "AI/BTTask_FindPatrolPos.h"
@@ -16,36 +16,36 @@ EBTNodeResult::Type UBTTask_FindPatrolPos::ExecuteTask(UBehaviorTreeComponent& O
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	APawn* ControllingPawn = OwnerComp.GetAIOwner()->GetPawn();				// Çàµ¿Æ®¸®¸¦ ¼ÒÀ¯ÇÑ ÄÄÆ÷³ÍÆ®ÀÇ ¿À³Ê, Áï AIController¸¦ »ó¼Ó¹ŞÀº ¿À³ÊÀÇ ÀÎ½ºÅÏ½º
-																			// ÀÌ ÀÎ½ºÅÏ½º°¡ ¾î¶² Pawn¿¡ ºùÀÇÇÏ°í ÀÖ´Ù¸é GetPawn ÇÔ¼ö·Î °¡Á®¿Ã ¼ö ÀÖÀ½
+	APawn* ControllingPawn = OwnerComp.GetAIOwner()->GetPawn();				// í–‰ë™íŠ¸ë¦¬ë¥¼ ì†Œìœ í•œ ì»´í¬ë„ŒíŠ¸ì˜ ì˜¤ë„ˆ, ì¦‰ AIControllerë¥¼ ìƒì†ë°›ì€ ì˜¤ë„ˆì˜ ì¸ìŠ¤í„´ìŠ¤
+																			// ì´ ì¸ìŠ¤í„´ìŠ¤ê°€ ì–´ë–¤ Pawnì— ë¹™ì˜í•˜ê³  ìˆë‹¤ë©´ GetPawn í•¨ìˆ˜ë¡œ ê°€ì ¸ì˜¬ ìˆ˜ ìˆìŒ
 	if (ControllingPawn == nullptr)
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	// ¹öÀü¾÷ÀÌ µÇ¸é¼­ V1ÀÌ¶ó´Â ÀÌ¸§ÀÌ µÚ¿¡ ºÙ°Ô µÈ °Í.
+	// ë²„ì „ì—…ì´ ë˜ë©´ì„œ V1ì´ë¼ëŠ” ì´ë¦„ì´ ë’¤ì— ë¶™ê²Œ ëœ ê²ƒ.
 	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetNavigationSystem(ControllingPawn->GetWorld());
 	if (NavSystem == nullptr)
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	// ÀÎÅÍÆäÀÌ½º »ó¼Ó ¹Ş¾Æ¼­ ±¸Çö µÇ¾îÀÖ´ÂÁö Cast·Î È®ÀÎ
+	// ì¸í„°í˜ì´ìŠ¤ ìƒì† ë°›ì•„ì„œ êµ¬í˜„ ë˜ì–´ìˆëŠ”ì§€ Castë¡œ í™•ì¸
 	IABCharacterAIInterface* AIPawn = Cast<IABCharacterAIInterface>(ControllingPawn);
 	if (AIPawn == nullptr)
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	// ºí·¢º¸µåÀÇ °ª °¡Á®¿À±â
+	// ë¸”ë™ë³´ë“œì˜ ê°’ ê°€ì ¸ì˜¤ê¸°
 	FVector Origin = OwnerComp.GetBlackboardComponent()->GetValueAsVector(BBKEY_HOMEPOS);
 
 	FNavLocation NextPatrolPos;
 
 	float PatrolRadius = AIPawn->GetAIPatrolRadius();
 
-	// BBKEY_HOMEPOS ¿¡ ÀúÀåµÈ Origin °ª°ú ¹İÁö¸§°ªÀ» ³Ñ°Ü¼­ ¾òÀº °ªÀ» NextPatrolPos ¿¡ ¹Ş¾Æ¿À°Ô ÇÔ.
-	// ¹İ°æ ³»¿¡ Àû´çÇÑ À§Ä¡¸¦ Ã£°Ô µÇ¸é true¸¦ ¹İÈ¯ÇÔ.
+	// BBKEY_HOMEPOS ì— ì €ì¥ëœ Origin ê°’ê³¼ ë°˜ì§€ë¦„ê°’ì„ ë„˜ê²¨ì„œ ì–»ì€ ê°’ì„ NextPatrolPos ì— ë°›ì•„ì˜¤ê²Œ í•¨.
+	// ë°˜ê²½ ë‚´ì— ì ë‹¹í•œ ìœ„ì¹˜ë¥¼ ì°¾ê²Œ ë˜ë©´ trueë¥¼ ë°˜í™˜í•¨.
 	if (NavSystem->GetRandomPointInNavigableRadius(Origin, PatrolRadius, NextPatrolPos))
 	{
 		OwnerComp.GetBlackboardComponent()->SetValueAsVector(BBKEY_PATROLPOS, NextPatrolPos.Location);

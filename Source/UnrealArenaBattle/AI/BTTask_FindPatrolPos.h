@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -18,7 +18,7 @@ class UNREALARENABATTLE_API UBTTask_FindPatrolPos : public UBTTaskNode
 public:
 	UBTTask_FindPatrolPos();
 
-	// ´ÙÀ½ Á¤Âû À§Ä¡¸¦ Ã£´Â Task
+	// ë‹¤ìŒ ì •ì°° ìœ„ì¹˜ë¥¼ ì°¾ëŠ” Task
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 

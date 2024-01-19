@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -9,10 +9,17 @@
 /**
  * 
  */
-// Áö±İ Å¸°ÙÀÌ °ø°İ ¹üÀ§ ¾È¿¡ ÀÖ´ÂÁö È®ÀÎÇÏ´Â µ¥ÄÚ·¹ÀÌÅÍ ³ëµå
+// ì§€ê¸ˆ íƒ€ê²Ÿì´ ê³µê²© ë²”ìœ„ ì•ˆì— ìˆëŠ”ì§€ í™•ì¸í•˜ëŠ” ë°ì½”ë ˆì´í„° ë…¸ë“œ
 UCLASS()
 class UNREALARENABATTLE_API UBTDecorator_AttackInRange : public UBTDecorator
 {
 	GENERATED_BODY()
 	
+	
+public:
+	UBTDecorator_AttackInRange();
+
+
+protected:
+	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
 };
