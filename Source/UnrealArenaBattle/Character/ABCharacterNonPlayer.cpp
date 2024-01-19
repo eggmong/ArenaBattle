@@ -3,11 +3,16 @@
 
 #include "Character/ABCharacterNonPlayer.h"
 #include "Engine/AssetManager.h"
+#include "AI/ABAIController.h"
 
 AABCharacterNonPlayer::AABCharacterNonPlayer()
 {
 	// 메쉬가 로딩이 될 때 까진 숨기기
 	GetMesh()->SetHiddenInGame(true);
+
+	AIControllerClass = AABAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;		// 배치된 npc 혹은 SpawnActor로 생성시킨 npc 둘 다
+																// AABAIController 에 의해서 통제 되도록 함
 }
 
 void AABCharacterNonPlayer::PostInitializeComponents()
@@ -56,4 +61,24 @@ void AABCharacterNonPlayer::NPCMeshLoadCompleted()
 
 	// 핸들 사용 후 해제
 	NPCMeshHandle->ReleaseHandle();
+}
+
+float AABCharacterNonPlayer::GetAIPatrolRadius()
+{
+	return 800.0f;
+}
+
+float AABCharacterNonPlayer::GetAIDetectRange()
+{
+	return 400.0f;
+}
+
+float AABCharacterNonPlayer::GetAIAttackRange()
+{
+	return 0.0f;
+}
+
+float AABCharacterNonPlayer::GetAITurnSpeed()
+{
+	return 0.0f;
 }

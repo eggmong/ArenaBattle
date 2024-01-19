@@ -5,12 +5,13 @@
 #include "CoreMinimal.h"
 #include "Character/ABCharacterBase.h"
 #include "Engine/StreamableManager.h"
+#include "Interface/ABCharacterAIInterface.h"
 #include "ABCharacterNonPlayer.generated.h"
 
 
 // Config 폴더의 DefaultUnrealArenaBattle.ini 를 사용하겠다는 것
 UCLASS(Config=UnrealArenaBattle)
-class UNREALARENABATTLE_API AABCharacterNonPlayer : public AABCharacterBase
+class UNREALARENABATTLE_API AABCharacterNonPlayer : public AABCharacterBase, public IABCharacterAIInterface
 {
 	GENERATED_BODY()
 	
@@ -37,4 +38,13 @@ protected:
 
 	// 위의 오브젝트 로딩을 비동기로 진행하기 위해 Handle 구조체 선언
 	TSharedPtr<FStreamableHandle> NPCMeshHandle;
+
+
+protected:
+	
+	// AI Section
+	virtual float GetAIPatrolRadius() override;
+	virtual float GetAIDetectRange() override;
+	virtual float GetAIAttackRange() override;
+	virtual float GetAITurnSpeed() override;
 };
