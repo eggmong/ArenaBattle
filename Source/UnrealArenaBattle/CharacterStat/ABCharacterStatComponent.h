@@ -23,8 +23,7 @@ public:
 	UABCharacterStatComponent();
 
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
+	virtual void InitializeComponent() override;
 
 
 public:

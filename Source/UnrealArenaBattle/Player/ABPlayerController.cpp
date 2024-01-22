@@ -28,5 +28,11 @@ void AABPlayerController::BeginPlay()
 	{
 		// 뷰포트 화면에 출력하도록 호출
 		ABHUDWidget->AddToViewport();
+
+		// 엔진의 초기화 순서 상
+		// ABCharacterStatComponent 의 InitializeComponent 함수가 먼저 호출되면서 (컴포넌트의 InitializeComponent 함수가 먼저 호출됨)
+		// 플레이어 스탯이 초기화 되고 (확정 되고),
+		// 이후 ABPlayerController인 이 액터의 BeginPlay 함수에서 이 AddToViewport 가 호출되면서 NativeConstruct 가 실행됨.
+		// 그러면 ABHUDWidget 의 OnNativeConstruct 가 실행 된다.
 	}
 }

@@ -12,15 +12,16 @@ UABCharacterStatComponent::UABCharacterStatComponent()
 
 	CurrentLevel = 1;
 	AttackRadius = 50.0f;
+
+	bWantsInitializeComponent = true;		// true 로 넣어줘야 InitializeComponent 함수 실행.
+											// 모든 상속받은 클래스들이 InitializeComponent 를 실행해버리면 성능 문제가 있을 수 있으니까
 }
 
 
-// Called when the game starts
-void UABCharacterStatComponent::BeginPlay()
-{
-	Super::BeginPlay();
 
-	//SetHp(MaxHp);
+void UABCharacterStatComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
 
 	SetLevelStat(CurrentLevel);
 
