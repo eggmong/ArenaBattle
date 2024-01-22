@@ -46,6 +46,11 @@ public:
 	AABStageGimmick();
 
 
+public:
+	FORCEINLINE int32 GetStageNum() const { return CurrentStageNum; }
+	FORCEINLINE void SetStageNum(int32 NewStageNum) { CurrentStageNum = NewStageNum; }
+
+
 protected:
 	virtual void OnConstruction(const FTransform& Transform) override;			// 에디터에서 속성 값들을 변경할 때 연동된 것들이 같이 시뮬레이션 되도록 설정할 수 있는 함수
 
@@ -119,6 +124,8 @@ protected:
 	void OnOpponentDestroyed(AActor* DestroyedActor);						// npc가 죽으면 보상 단계로 진행되어야 하기 때문에, 그걸 위한 함수
 
 	FTimerHandle OpponentTimerHandle;
+
+	// npc 스폰 함수
 	void OnOpponentSpawn();						
 
 
@@ -147,4 +154,12 @@ protected:
 
 	void SpawnRewardBoxes();
 	// 박스 스폰 하는 함수
+
+
+protected:
+	// Stage Stat Section
+
+	// 현재 인스턴스에서 볼 수만 있도록 VisibleInatanceOnly
+	UPROPERTY(VisibleInstanceOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	int32 CurrentStageNum;
 };

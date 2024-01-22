@@ -79,6 +79,9 @@ protected:
 	// 저거랑 똑같이 맞춘것
 	void ComboActionEnd(class UAnimMontage* TargetMontage, bool IsProperlyEnded);
 
+	// 공격이 끝나는 지점을 파악하기 위해 새로 생성 (ComboActionEnd 함수도 있긴 하지만, 이건 몽타주가 연계되어있어서..)
+	virtual void NotifyComboActionEnd();
+
 	// 타이머를 발동 시킬 함수
 	void SetComboCheckTimer();
 
@@ -149,4 +152,11 @@ protected:
 	virtual void DrinkPotion(class UABItemData* InItemData);
 	virtual void EquipWeapon(class UABItemData* InItemData);
 	virtual void ReadScroll(class UABItemData* InItemData);
+
+
+public:
+	// Stat Section
+
+	int32 GetLevel();
+	void SetLevel(int32 InNewLevel);
 };

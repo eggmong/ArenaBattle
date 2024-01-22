@@ -42,6 +42,10 @@ protected:
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
 	// UBoxComponent 에서 제공하는 델리게이트가 있음, OnComponentBeginOverlap 라고...
 	// 이 델리게이트에 이 함수를 붙일것
+	// +++
+	// 상자 자체에서 설정한 델리게이트로 인해 이벤트가 발생해버리면 제어하기가 불편
+	// 상자에 설정된 델리게이트의 타이밍을 뒤로 미루고
+	// 기믹의 진행을 위해서 설정된 델리게이트를 먼저 설정하도록 변경하겠음
 
 	UFUNCTION()
 	void OnEffectFinished(class UParticleSystemComponent* ParticleSystem);

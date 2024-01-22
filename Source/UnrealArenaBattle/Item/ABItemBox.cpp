@@ -23,7 +23,8 @@ AABItemBox::AABItemBox()
 
     Trigger->SetCollisionProfileName(CPROFILE_ABTRIGGER);		// ABCollision 에서 정의한거
 	Trigger->SetBoxExtent(FVector(40.0f, 42.0f, 30.0f));		// 사이즈 지정
-	Trigger->OnComponentBeginOverlap.AddDynamic(this, &AABItemBox::OnOverlapBegin);
+	//Trigger->OnComponentBeginOverlap.AddDynamic(this, &AABItemBox::OnOverlapBegin);
+	// // 타이밍 미룰 예정 (헤더 참고)
 	// OnComponentBeginOverlap -> FComponentBeginOverlapSignature 들어가보면,
 	// DECLARE_DYNAMIC~ 이렇게 다이나믹 델리게이트 확인할 수 있음. DYNAMIC : 블루프린트 지원한다는 거
 	// 그래서 델리게이트에 등록하려는 함수는 UFUNCTION() 지정을 해줘야 한다.
@@ -56,7 +57,7 @@ void AABItemBox::PostInitializeComponents()
 	Manager.GetPrimaryAssetIdList(TEXT("ABItemData"), Assets);		// Asset ID 목록 중에 태그가 ABItemData 인거 가져와서 Assets 배열에 저장
 	ensure(0 < Assets.Num());
 
-	int32 RandomIndex = FMath::RandRange(0, Assets.Num() - 1);
+	int32 RandomIndex = FMath::RandRange(0, Assets.Num() - 1); //FMath::RandRange(2, 2/*Assets.Num() - 1*/);
 
 	FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(Assets[RandomIndex]));	// 약참조를 걸어 로딩이 되어있지 않다면 로딩해줌
 	if (AssetPtr.IsPending())
@@ -67,6 +68,10 @@ void AABItemBox::PostInitializeComponents()
 	Item = Cast<UABItemData>(AssetPtr.Get());
 
 	ensure(Item);
+
+	Trigger->OnComponentBeginOverlap.AddDynamic(this, &AABItemBox::OnOverlapBegin);		// 원래 생성자에 있었는데 여기로 옮김 (타이밍 미룸)
+	// PostInitializeComponents 도 FinishSpawning 이후 호출되기 때문에.
+	// AABStageGimmick::SpawnRewardBoxes() 에서 SpawnActor 을 지연 생성 SpawnActorDeferred 로 바꿨음.
 }
 
 void AABItemBox::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
