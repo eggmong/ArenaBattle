@@ -37,6 +37,7 @@ public:
 	FORCEINLINE FABCharacterStat GetTotalStat() const { return BaseStat + ModifierStat; }
 	//FORCEINLINE float GetMaxHp() { return MaxHp; }
 	FORCEINLINE float GetCurrentHp() const { return CurrentHp; }
+	FORCEINLINE float GetAttackRadius() const { return AttackRadius; }
 	float ApplyDamage(float InDamage);
 
 
@@ -52,6 +53,9 @@ protected:
 	
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stat")
 	float CurrentLevel;
+
+	UPROPERTY(VisibleInstanceOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	float AttackRadius;
 
 	// 기본 스탯
 	// 캐릭터 스탯은 현재 레벨을 기반으로 게임 싱글톤으로부터 스탯 데이터를 받아오게 됨

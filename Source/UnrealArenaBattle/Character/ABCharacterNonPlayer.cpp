@@ -4,6 +4,7 @@
 #include "Character/ABCharacterNonPlayer.h"
 #include "Engine/AssetManager.h"
 #include "AI/ABAIController.h"
+#include "CharacterStat/ABCharacterStatComponent.h"
 
 AABCharacterNonPlayer::AABCharacterNonPlayer()
 {
@@ -75,10 +76,32 @@ float AABCharacterNonPlayer::GetAIDetectRange()
 
 float AABCharacterNonPlayer::GetAIAttackRange()
 {
-	return 0.0f;
+	return Stat->GetTotalStat().AttackRange + Stat->GetAttackRadius() * 2;
 }
 
 float AABCharacterNonPlayer::GetAITurnSpeed()
 {
 	return 0.0f;
+}
+
+void AABCharacterNonPlayer::AttackByAI()
+{
+	// AABCharacterPlayer 의 경우, Attack 입력이 들어올 때 마다 ProcessComboCommand 함수를 호출했었음
+	// 그래서 npc도 동일하게 호출
+
+	ProcessComboCommand();
+}
+
+void AABCharacterNonPlayer::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)
+{
+	OnAttackFinished = InOnAttackFinished;
+}
+
+void AABCharacterNonPlayer::NotifyComboActionEnd()
+{
+	// AABCharacterBase 에서 호출한대로, 콤보 공격이 끝나면 호출될 것
+
+	Super::NotifyComboActionEnd();
+
+	OnAttackFinished.ExecuteIfBound();
 }
