@@ -32,6 +32,14 @@ void AABCharacterNonPlayer::SetDead()
 {
 	Super::SetDead();
 
+	// 죽었을 경우 더이상 인공지능이 수행되지 않도록 처리
+	AABAIController* ABAIController = Cast<AABAIController>(GetController());		// GetController 를 사용하면 Player 컨트롤러가 될 수도 있고 (ACharacter)
+																					// AI 컨트롤러가 될 수도 있어서 Cast로 형변환으로 AI 컨트롤러 가져옴.
+	if (ABAIController)
+	{
+		ABAIController->StopAI();
+	}
+
 	FTimerHandle DeadTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle,
 		FTimerDelegate::CreateLambda(	// () => {} 같이 C++ 람다

@@ -37,6 +37,13 @@ public:
 	void SetLevelStat(int32 InNewLevel);			// 레벨 설정
 	FORCEINLINE float GetCurrentLevel() const { return CurrentLevel; }
 
+	// 스크롤 습득하여 BaseStat 변경
+	FORCEINLINE void AddBaseStat(const FABCharacterStat& InAddBaseStat)
+	{
+		BaseStat = BaseStat + InAddBaseStat;
+		OnStatChanged.Broadcast(GetBaseStat(), GetModifierStat());
+	}
+
 	FORCEINLINE void SetBaseStat(const FABCharacterStat& InBaseStat)
 	{
 		BaseStat = InBaseStat;
@@ -56,6 +63,14 @@ public:
 	//FORCEINLINE float GetMaxHp() { return MaxHp; }
 	FORCEINLINE float GetCurrentHp() const { return CurrentHp; }
 	FORCEINLINE float GetAttackRadius() const { return AttackRadius; }
+
+	// 포션 습득하여 HP 충전
+	FORCEINLINE void HealHp(float InHealAmount)
+	{
+		CurrentHp = FMath::Clamp(CurrentHp + InHealAmount, 0, GetTotalStat().MaxHp);
+		OnHpChanged.Broadcast(CurrentHp);
+	}
+
 	float ApplyDamage(float InDamage);
 
 
