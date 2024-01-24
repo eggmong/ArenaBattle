@@ -13,6 +13,9 @@ DECLARE_MULTICAST_DELEGATE(FOnHpZeroDelegate);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnHpChangedDelegate, float /*CurrentHp*/);
 // 변경된 현재 Hp값을 구독한 객체들에게 보내고, 인자값은 하나(OneParam)
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStatChangedDelegate, const FABCharacterStat& /*BaseStat*/, const FABCharacterStat& /*ModifierStat*/);
+// 변경된 BaseStat 값과 ModifierStat 값을 구독한 객체들에게 보낸다
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UNREALARENABATTLE_API UABCharacterStatComponent : public UActorComponent
 {
@@ -29,10 +32,26 @@ protected:
 public:
 	FOnHpZeroDelegate OnHpZero;
 	FOnHpChangedDelegate OnHpChanged;
+	FOnStatChangedDelegate OnStatChanged;
 
 	void SetLevelStat(int32 InNewLevel);			// 레벨 설정
 	FORCEINLINE float GetCurrentLevel() const { return CurrentLevel; }
-	FORCEINLINE void SetModifierStat(const FABCharacterStat& InModifierStat) { ModifierStat = InModifierStat; }
+
+	FORCEINLINE void SetBaseStat(const FABCharacterStat& InBaseStat)
+	{
+		BaseStat = InBaseStat;
+		OnStatChanged.Broadcast(GetBaseStat(), GetModifierStat());
+	}
+
+	FORCEINLINE void SetModifierStat(const FABCharacterStat& InModifierStat)
+	{
+		ModifierStat = InModifierStat;
+		OnStatChanged.Broadcast(GetBaseStat(), GetModifierStat());
+	}
+
+	FORCEINLINE const FABCharacterStat& GetBaseStat() const { return BaseStat; }
+	FORCEINLINE const FABCharacterStat& GetModifierStat() const { return ModifierStat; }
+
 	FORCEINLINE FABCharacterStat GetTotalStat() const { return BaseStat + ModifierStat; }
 	//FORCEINLINE float GetMaxHp() { return MaxHp; }
 	FORCEINLINE float GetCurrentHp() const { return CurrentHp; }

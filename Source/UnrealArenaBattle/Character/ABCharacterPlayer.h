@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "Character/ABCharacterBase.h"
 #include "InputActionValue.h"
+#include "Interface/ABCharacterHUDInterface.h"
 #include "ABCharacterPlayer.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALARENABATTLE_API AABCharacterPlayer : public AABCharacterBase
+class UNREALARENABATTLE_API AABCharacterPlayer : public AABCharacterBase, public IABCharacterHUDInterface
 {
 	GENERATED_BODY()
 	
@@ -84,4 +85,9 @@ protected:
 	// v키를 눌렀을 때 컨트롤타입 변경하기 위한 함수
 	void ChangeCharacterControl();
 	void SetCharacterControl(ECharacterControlType NewCharacterControlType);
+
+
+protected:
+	// UI Section
+	virtual void SetupHUDWidget(class UABHUDWidget* InHUDWidget);
 };
