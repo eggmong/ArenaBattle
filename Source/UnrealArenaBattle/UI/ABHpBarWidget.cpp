@@ -6,7 +6,7 @@
 											// 근데 이 모듈은 기본적으로 포함이 안되어 있음.
 											// 그래서 빌드설정에 추가해야 함. (UnrealArenaBattle.Build.cs)
 											// "UMG"
-
+#include "Components/TextBlock.h"
 #include "Interface/ABCharacterWidgetInterface.h"
 
 
@@ -23,6 +23,9 @@ void UABHpBarWidget::NativeConstruct()
 	// WBP_HpBar 위젯 블루프린트에 ProgressBar 이름을 pHpBar 라고 지정해놨었음!
 
 	ensure(HpProgressBar);
+
+	HpStat = Cast<UTextBlock>(GetWidgetFromName(TEXT("TxtHpStat")));
+	ensure(HpStat);
 
 	// UABUserWidget 를 상속 받았으므로 OwningActor 변수 사용 가능
 	// 이 액터 정보에다가 UpdateHpBar 함수 정보를 전달해서
@@ -42,12 +45,38 @@ void UABHpBarWidget::NativeConstruct()
 	}
 }
 
+void UABHpBarWidget::UpdateStat(const FABCharacterStat& BaseStat, const FABCharacterStat& ModifierStat)
+{
+	MaxHp = (BaseStat + ModifierStat).MaxHp;
+
+	if (HpProgressBar)
+	{
+		HpProgressBar->SetPercent(CurrentHp / MaxHp);
+	}
+
+	if (HpStat)
+	{
+		HpStat->SetText(FText::FromString(GetHpStatText()));
+	}
+}
+
 void UABHpBarWidget::UpdateHpBar(float NewCurrentHp)
 {
-	ensure(MaxHp > 0.0f);
+	CurrentHp = NewCurrentHp;
 
+	ensure(MaxHp > 0.0f);
 	if (HpProgressBar)
 	{
 		HpProgressBar->SetPercent(NewCurrentHp / MaxHp);
 	}
+
+	if (HpStat)
+	{
+		HpStat->SetText(FText::FromString(GetHpStatText()));
+	}
+}
+
+FString UABHpBarWidget::GetHpStatText()
+{
+	return FString::Printf(TEXT("%.0f/%0.f"), CurrentHp, MaxHp);
 }

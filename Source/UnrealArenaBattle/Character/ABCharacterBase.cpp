@@ -359,12 +359,17 @@ void AABCharacterBase::SetupCharacterWidget(UABUserWidget* InUserWidget)
 
     if (HpBarWidget)
     {
-        HpBarWidget->SetMaxHp(Stat->GetTotalStat().MaxHp);
+        //HpBarWidget->SetMaxHp(Stat->GetTotalStat().MaxHp);
+        HpBarWidget->UpdateStat(Stat->GetBaseStat(), Stat->GetModifierStat());
+
         HpBarWidget->UpdateHpBar(Stat->GetCurrentHp());
+
         Stat->OnHpChanged.AddUObject(HpBarWidget, &UABHpBarWidget::UpdateHpBar);
         // Stat의 CurrentHp 값이 변경될 때 마다 UABHpBarWidget::UpdateHpBar 함수가 호출되도록
         // OnHpChanged 델리게이트에 위젯 인스턴스의 멤버함수 추가
         // -> 두 컴포넌트 간의 느슨한 결합
+
+        Stat->OnStatChanged.AddUObject(HpBarWidget, &UABHpBarWidget::UpdateStat);
     }
 }
 

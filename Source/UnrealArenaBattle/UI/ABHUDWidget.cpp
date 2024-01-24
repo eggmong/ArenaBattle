@@ -14,8 +14,10 @@ void UABHUDWidget::UpdateStat(const FABCharacterStat& BaseStat, const FABCharact
 {
 	// 스탯이 변경될 땐 MaxHP 값이 바뀌기 때문에 (증가하기 때문에)
 	// BaseStat 과 추가 스탯을 합친게 Max가 된다.
-	FABCharacterStat TotalStat = BaseStat + ModifierStat;
-	HpBar->SetMaxHp(TotalStat.MaxHp);
+	//FABCharacterStat TotalStat = BaseStat + ModifierStat;
+	//HpBar->SetMaxHp(TotalStat.MaxHp);
+
+	HpBar->UpdateStat(BaseStat, ModifierStat);
 
 	CharacterStat->UpdateStat(BaseStat, ModifierStat);
 }
