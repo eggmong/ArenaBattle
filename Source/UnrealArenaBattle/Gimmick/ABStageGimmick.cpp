@@ -7,6 +7,8 @@
 #include "Physics/ABCollision.h"
 #include "Character/ABCharacterNonPlayer.h"
 #include "Item/ABItemBox.h"
+#include "GameFramework/GameModeBase.h"
+#include "Interface/ABGameInterface.h"
 
 // Sets default values
 AABStageGimmick::AABStageGimmick()
@@ -228,8 +230,23 @@ void AABStageGimmick::SetChooseNext()
 
 void AABStageGimmick::OnOpponentDestroyed(AActor* DestroyedActor)
 {
-	// npc 가 죽었으므로 다음 단계 이동 구현
+	// Clear Section
+	// Score 추가
+	// Clear Score에 도달하면 보상이 생성되지 않음.
 
+	// GameFramework/GameModeBase.h 인클루드 해줌. Cast 에러가 자꾸 나서...
+	IABGameInterface* ABGameMode = Cast<IABGameInterface>(GetWorld()->GetAuthGameMode());			// GameMode는 GetWorld로부터 가져올 수 있음.
+	if (ABGameMode)
+	{
+		ABGameMode->OnPlayerScoreChanged(CurrentStageNum);			// CurrentStageNum, 스테이지 번호를 넣어줘서 최종 스테이지까지 클리어하면 게임 클리어 되는 걸로 함.
+
+		if (ABGameMode->IsGameCleared())
+		{
+			return;													// 다음 단계로 이동되지 않도록 return
+		}
+	}
+
+	// npc 가 죽었으므로 다음 단계 이동 구현 -> 보상 단계
 	SetState(EStageState::REWARD);
 }
 
