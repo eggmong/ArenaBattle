@@ -6,6 +6,8 @@
 #include "GameFramework/PlayerController.h"
 #include "ABPlayerController.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogABPlayerController, Log, All);
+
 /**
  * 
  */
@@ -34,6 +36,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = Game, Meta = (DisplayName = "OnGameOverCpp"))
 	void K2_OnGameOver();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = Game, Meta = (DisplayName = "OnGameRetryCountCpp"))
+	void K2_OnGameRetryCount(int32 NewRetryCount);		// 재시작 하는 이벤트 생성
+
 	void GameScoreChanged(int32 NewScore);
 	void GameOver();
 	void GameClear();
@@ -52,4 +57,11 @@ protected:
 	// 위젯의 포인터를 담을 변수도 생성
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HUD)
 	TObjectPtr<class UABHUDWidget> ABHUDWidget;
+
+protected:
+	// Save Game Section
+	
+	// 해당 객체가 메모리에서 관리되도록 변수 추가
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = SaveGame)
+	TObjectPtr<class UABSaveGame> SaveGameInstance;
 };

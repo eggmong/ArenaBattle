@@ -3,6 +3,10 @@
 
 #include "Player/ABPlayerController.h"
 #include "UI/ABHUDWidget.h"
+#include "ABSaveGame.h"
+#include "Kismet/GameplayStatics.h"
+
+DEFINE_LOG_CATEGORY(LogABPlayerController);
 
 AABPlayerController::AABPlayerController()
 {
@@ -21,6 +25,14 @@ void AABPlayerController::GameScoreChanged(int32 NewScore)
 void AABPlayerController::GameOver()
 {
 	K2_OnGameOver();
+
+	if (!UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("Player0"), 0))
+	{
+		// 저장 실패하면 Error 로그를 띄우도록, 카테고리는 헤더에서 추가함
+		UE_LOG(LogABPlayerController, Error, TEXT("Save Game Error!"));
+	}
+
+	K2_OnGameRetryCount(SaveGameInstance->RetryCount);
 }
 
 void AABPlayerController::GameClear()
@@ -52,4 +64,16 @@ void AABPlayerController::BeginPlay()
 	//	// 이후 ABPlayerController인 이 액터의 BeginPlay 함수에서 이 AddToViewport 가 호출되면서 NativeConstruct 가 실행됨.
 	//	// 그러면 ABHUDWidget 의 OnNativeConstruct 가 실행 된다.
 	//}
+
+	// LoadGameFromSlot : 저장한 게임이 있는지 확인하고 로드, Player0 : 파일 이름, 싱글 게임의 경우 UserIndex는 항상 0.
+	SaveGameInstance = Cast<UABSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("Player0"), 0));
+	if (!SaveGameInstance)
+	{
+		SaveGameInstance = NewObject<UABSaveGame>();
+		SaveGameInstance->RetryCount = 0;
+	}
+
+	SaveGameInstance->RetryCount++;
+
+	K2_OnGameRetryCount(SaveGameInstance->RetryCount);
 }
