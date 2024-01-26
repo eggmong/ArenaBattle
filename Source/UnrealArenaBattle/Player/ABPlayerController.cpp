@@ -37,17 +37,19 @@ void AABPlayerController::BeginPlay()
 	FInputModeGameOnly GameOnlyInputMode;
 	SetInputMode(GameOnlyInputMode);
 
-	// 게임이 시작되면 HUD 위젯 생성
-	ABHUDWidget = CreateWidget<class UABHUDWidget>(this, ABHUDWidgetClass);
-	if (ABHUDWidget)
-	{
-		// 뷰포트 화면에 출력하도록 호출
-		ABHUDWidget->AddToViewport();
+	// 주석처리 한 이유 : UI 작업은 코드 보단 블루프린트에서 하는게 편해서
+	// BP_ABPlayerController 블루프린트에서 BeginPlay 흐름에서 띄우도록 변경.
+	//// 게임이 시작되면 HUD 위젯 생성
+	//ABHUDWidget = CreateWidget<class UABHUDWidget>(this, ABHUDWidgetClass);
+	//if (ABHUDWidget)
+	//{
+	//	// 뷰포트 화면에 출력하도록 호출
+	//	ABHUDWidget->AddToViewport();
 
-		// 엔진의 초기화 순서 상
-		// ABCharacterStatComponent 의 InitializeComponent 함수가 먼저 호출되면서 (컴포넌트의 InitializeComponent 함수가 먼저 호출됨)
-		// 플레이어 스탯이 초기화 되고 (확정 되고),
-		// 이후 ABPlayerController인 이 액터의 BeginPlay 함수에서 이 AddToViewport 가 호출되면서 NativeConstruct 가 실행됨.
-		// 그러면 ABHUDWidget 의 OnNativeConstruct 가 실행 된다.
-	}
+	//	// 엔진의 초기화 순서 상
+	//	// ABCharacterStatComponent 의 InitializeComponent 함수가 먼저 호출되면서 (컴포넌트의 InitializeComponent 함수가 먼저 호출됨)
+	//	// 플레이어 스탯이 초기화 되고 (확정 되고),
+	//	// 이후 ABPlayerController인 이 액터의 BeginPlay 함수에서 이 AddToViewport 가 호출되면서 NativeConstruct 가 실행됨.
+	//	// 그러면 ABHUDWidget 의 OnNativeConstruct 가 실행 된다.
+	//}
 }
