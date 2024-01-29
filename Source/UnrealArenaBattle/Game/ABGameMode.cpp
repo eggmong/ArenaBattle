@@ -2,7 +2,7 @@
 
 
 #include "Game/ABGameMode.h"
-//#include "Player/ABPlayerController.h"
+#include "Player/ABPlayerController.h"
 
 AABGameMode::AABGameMode()
 {
@@ -47,4 +47,49 @@ AABGameMode::AABGameMode()
 	// StaticClass() 함수 호출 하지 않고,
 	// 컨트롤러 클래스를 가져올 수 있음
 	
+
+	// Clear Section
+	ClearScore = 3;
+
+	CurrentScore = 0;
+	bIsCleared = false;
+}
+
+void AABGameMode::OnPlayerScoreChanged(int32 NewPlayerScore)
+{
+	CurrentScore = NewPlayerScore;
+
+	AABPlayerController* ABPlayerController = Cast<AABPlayerController>(GetWorld()->GetFirstPlayerController());
+	// 싱글 게임이라 첫번째 플레이어 컨트롤러만 가져오면 됨
+
+	if (ABPlayerController)
+	{
+		ABPlayerController->GameScoreChanged(CurrentScore);
+	}
+
+	if (CurrentScore >= ClearScore)
+	{
+		bIsCleared = true;
+
+		if (ABPlayerController)
+		{
+			ABPlayerController->GameClear();
+		}
+	}
+}
+
+void AABGameMode::OnPlayerDead()
+{
+	AABPlayerController* ABPlayerController = Cast<AABPlayerController>(GetWorld()->GetFirstPlayerController());
+	// 싱글 게임이라 첫번째 플레이어 컨트롤러만 가져오면 됨
+
+	if (ABPlayerController)
+	{
+		ABPlayerController->GameOver();
+	}
+}
+
+bool AABGameMode::IsGameCleared()
+{
+	return bIsCleared;
 }

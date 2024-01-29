@@ -10,6 +10,8 @@
 #include "Character/ABCharacterControlData.h"
 #include "UI/ABHUDWidget.h"
 #include "CharacterStat/ABCharacterStatComponent.h"
+#include "Interface/ABGameInterface.h"
+#include "GameFramework/GameModeBase.h"
 
 
 AABCharacterPlayer::AABCharacterPlayer()
@@ -75,9 +77,35 @@ void AABCharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// 시작할 때 input 넣도록 처리
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		EnableInput(PlayerController);
+	}
+
 	// 첫 시작은 쿼터뷰로 하게
 	// 위에 CurrentCharacterControlType = ECharacterControlType::Quater; 코드 써놨음 생성자에
 	SetCharacterControl(CurrentCharacterControlType);
+}
+
+void AABCharacterPlayer::SetDead()
+{
+	Super::SetDead();
+
+	// 죽었으므로 더이상 input이 전달되지 않도록 처리
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		DisableInput(PlayerController);
+
+		// Clear Section
+		IABGameInterface* ABGameMode = Cast<IABGameInterface>(GetWorld()->GetAuthGameMode());
+		if (ABGameMode)
+		{
+			ABGameMode->OnPlayerDead();
+		}
+	}
 }
 
 
