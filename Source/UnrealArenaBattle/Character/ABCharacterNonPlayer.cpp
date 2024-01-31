@@ -14,6 +14,12 @@ AABCharacterNonPlayer::AABCharacterNonPlayer()
 	AIControllerClass = AABAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;		// 배치된 npc 혹은 SpawnActor로 생성시킨 npc 둘 다
 																// AABAIController 에 의해서 통제 되도록 함
+
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/ArenaBattle/Animation/ABP_ABNpc.ABP_ABNpc_C"));
+	if (AnimInstanceClassRef.Class)
+	{
+		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
+	}
 }
 
 void AABCharacterNonPlayer::PostInitializeComponents()
