@@ -215,6 +215,13 @@ void AABCharacterPlayer::ChangeCharacterControl()
 
 void AABCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterControlType)
 {
+	// 폰이 로컬에 의해 제어받는 경우, 해당 플레이어는 IsLocallyControlled = true이다.
+	// 만약 IsLocallyControlled == false일 경우, 원격 클라이언트의 플레이어다.
+	if (!IsLocallyControlled())
+	{
+		return;
+	}
+
 	UABCharacterControlData* NewCharacterControl = CharacterControlManager[NewCharacterControlType];
 	check(NewCharacterControl);
 
